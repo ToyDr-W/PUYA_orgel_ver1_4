@@ -1,0 +1,35 @@
+①８ピンデバイスで６ピンを全部使った事例を作った。
+
+・ＣＶＤを３ｃｈ
+
+・シングル出力
+
+・ＳＰＩフラッシュを２線ＳＰＩ接続
+
+・上記で６ポートを使い切る。
+
+・機械ＳＷであれば２線ＳＰＩのＭＯＳＩ／ＭＩＳＯとＳＷでポートを共用させることができるが、ＣＶＤの場合は他の周辺回路と繋がると安定なタッチ評価ができないので、ポート共用は考えない。
+
+②ＣＶＤでの操作は下記に割り当てている。
+
+・ＣＶＤ０はオルゴールの演奏
+
+・ＣＶＤ１はＳＰＩフラッシュからの音声再生
+
+・ＣＶＤ２はプログラムフラッシュからの音声再生
+
+・ともにタイマーモードで使用している。
+
+③動作確認環境
+<a href="http://tutujith.blog.fc2.com/img/20250720190733745.jpg/" target="_blank"><img src="https://blog-imgs-163.fc2.com/t/u/t/tutujith/20250720190733745.jpg" alt="ＰＵＹＡ電子オルゴールVer1_4（８ピンデバイスのフルピン使用事例）動作確認環境" border="0" width="848" height="635" /></a>
+
+④動作確認動画
+<iframe src="https://video.fc2.com//embed/player/20250720RUnw5xS3/" width="560" height="315" frameborder="0" allowfullscreen="true"></iframe>
+
+⑤ダウンロード
+
+この事例のプロジェクト一式は　<a href="https://drive.google.com/file/d/1BHKj8xfGfpvUNbqxVwxWBnooY0XvVsuR/view?usp=sharing" target="_blank" title="ここから"><span style="color:#FF0000"><strong>ここから</strong></span></a>　ダウンロードできる。
+
+ディレクトリは　orgel1_4\orgel_SW_F002A_8_CVD3
+
+プロジェクトは　PY32F002.uvprojx

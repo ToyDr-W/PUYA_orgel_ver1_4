@@ -1,0 +1,57 @@
+【前振り】
+
+この頃、ＡＤＰＣＭの導入を進めている。既に、<a href="https://tutujith.blog.fc2.com/blog-entry-1075.html" target="_blank" title="ミミクリ"><span style="color:#FF0000"><strong>ミミクリ</strong></span></a>　と　<a href="https://tutujith.blog.fc2.com/blog-entry-1073.html" target="_blank" title="１チップレコーダー"><span style="color:#FF0000"><strong>１チップレコーダー</strong></span></a>　への導入を行った。
+
+今回は、<a href="https://tutujith.blog.fc2.com/blog-entry-989.html" target="_blank" title="ＰＵＹＡ電子オルゴール"><span style="color:#FF0000"><strong>ＰＵＹＡ電子オルゴール</strong></span></a>　に導入した。
+
+
+【設計】
+
+①ＡＤＰＣＭの方式
+
+・音声品質とＣＰＵ負荷のバランスが良いＩＭＡ－ＡＤＰＣＭとした。
+
+②改善の対象
+
+・ＶＯＩＣＥＮ・ＶＯＩＣＥＩ・ＶＯＩＣＥＳに導入した。ＶＯＩＣＥＣは対象外である。
+
+・ＶＯＩＣＥＮ・ＶＯＩＣＥＩ・ＶＯＩＣＥＳの範疇ごとにＡＤＰＣＭか従来の８ビットＰＣＭかの指定が可能。
+
+③収容音声の時間
+
+・ＰＵＹＡ電子オルゴールでＶＯＩＣＥＮのみを実装する場合の実行コードは約１．５kバイトである。
+
+・プログラムフラッシュは３２ｋバイトあるので、３０ｋバイトに音声データを収容することができる。
+
+・８ｋｓｐｓでは　３０kバイト／４ビット／８ｋｓｐｓ＝７．５秒　となる。
+
+
+【実装】
+
+①コードのアオウトラインは　<a href="https://tutujith.blog.fc2.com/blog-entry-1074.html" target="_blank" title="ＩＭＡ－ＡＤＰＣＭの導入"><span style="color:#FF0000"><strong>ＩＭＡ－ＡＤＰＣＭの導入</strong></span></a>　を参照。
+
+②実装コードはダウンロードファイルの　ｏｒｇｅｌ．ｃ　を参照。
+
+③聴感では音声品質の劣化は殆ど感じられない。
+
+最初に８ビットＰＣＭで再生、その後ＩＭＡ－ＡＤＰＣＭで再生している。
+<a href="https://blog-imgs-201.fc2.com/t/u/t/tutujith/20260902145002cf6.mp3" target="_blank"><span style="color:#FF0000"><strong>ＰＵＹＡ電子オルゴールVer1_4（ＡＤＰＣＭをサポート）</strong></span></a>
+
+
+【ダウンロード】
+
+プロジェクト一式は　<a href="https://drive.google.com/file/d/1BHKj8xfGfpvUNbqxVwxWBnooY0XvVsuR/view?usp=sharing" target="_blank" title="ここから"><span style="color:#FF0000"><strong>ここから</strong></span></a>　ダウンロードできる。
+
+パッケージによってピン割り当てが違うので、ピン数別にプロジェクトを作っている。
+
+２０ピン
+ディレクトリ　orgel1_4\orgel_SW_F002A_20
+プロジェクト　PY32F002.uvprojx
+
+１６ピン
+ディレクトリ　orgel1_4\orgel_SW_F002A_16
+プロジェクト　PY32F002.uvprojx
+
+８ピン
+ディレクトリ　orgel1_4\orgel_SW_F002A_8
+プロジェクト　PY32F002.uvprojx
