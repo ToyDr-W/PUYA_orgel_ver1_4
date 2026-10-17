@@ -20,7 +20,7 @@ VOICES2_VOL equ 100
 ORGEL_VOL equ 100 
 KB0_VOL equ 100 
 KB1_VOL equ 100 
-VOICE_N equ 0 
+VOICE_N equ 1 
 VOICE_I equ 0 
 VOICE_C equ 0 
 VOICE_S equ 0 

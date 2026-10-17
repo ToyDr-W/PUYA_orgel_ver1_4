@@ -2,17 +2,18 @@
 //#define	SHDBG		//ﾃﾞﾊﾞｸﾞ情報を出力するときに宣言する
 //#define	SHBPS	115200	//ﾃﾞﾊﾞｸﾞ情報のﾎﾞｰﾚｰﾄを宣言する(ﾃﾞﾌｫﾙﾄ値は38400bps)
 //#define	SHDBG_SOFT	//ﾃﾞﾊﾞｸﾞ情報のUARTをｿﾌﾄ実装するときに宣言する		
+//#define	SHDBG_IN	//ﾃﾞﾊﾞｸﾞ情報を入力するときに宣言する(UARTのｿﾌﾄ実装は不可)	
 
 //#define	I2C_SOFT	//I2Cをｿﾌﾄ実装するときに宣言する
 //#define	SPI_SOFT	//SPIをｿﾌﾄ実装するときに宣言する
-#define		SHSPI2		//2線SPIのときに宣言する
+//#define	SHSPI2		//2線SPIのときに宣言する
 //#define	SHSPI3		//3線SPIのときに宣言する
 #define		SLEEP_EN	//Sleep機能を実装するときに宣言する
-#define	KYOKU_AUTO	//ｵﾙｺﾞｰﾙ演奏を自動開始するときに宣言する
-//#define	ONSEIN_AUTO	//音声N(ch0)再生を自動開始するときに宣言する
-//#define	ONSEII_AUTO	//音声I再生を自動開始するときに宣言する
-//#define	ONSEIC_AUTO	//音声C再生を自動開始するときに宣言する
-//#define	ONSEIS_AUTO	//音声S(ch0)再生を自動開始するときに宣言する
+#define		KYOKU_AUTO	//ｵﾙｺﾞｰﾙ演奏を自動開始するときに宣言する
+#define		ONSEIN_AUTO	//音声N(ch0)再生を自動開始するときに宣言する
+#define		ONSEII_AUTO	//音声I再生を自動開始するときに宣言する
+#define		ONSEIC_AUTO	//音声C再生を自動開始するときに宣言する
+#define		ONSEIS_AUTO	//音声S(ch0)再生を自動開始するときに宣言する
 //#define	RAND_CHSEL	0x00000080	//ﾗﾝﾀﾞﾏｲｽﾞの種にするCHSEL(PA7:ADC_IN7)
 //#define	KYOKU_RAND	//曲番号をﾗﾝﾀﾞﾏｲｽﾞするときに宣言する
 //#define	ONSEIN_RAND	//音声N番号をﾗﾝﾀﾞﾏｲｽﾞするときに宣言する
@@ -26,18 +27,26 @@
 
 //ｵﾙｺﾞｰﾙ箱への応用では以下を宣言しておくこと
 //#define	CdS_FUTA	//蓋を開ける(明)とｵﾝ判定する
-#define	CdS_THR	100	//判定閾値を固定の宣言値にする
+//#define	CdS_THR	100	//判定閾値を固定の宣言値にする
 
 #define		VOICEN_IMA	//音声NがIMA_ADPCMｴﾝｺｰﾄﾞのときに宣言する
 #define		VOICEI_IMA	//音声IがIMA_ADPCMｴﾝｺｰﾄﾞのときに宣言する
 #define		VOICES_IMA	//音声SがIMA_ADPCMｴﾝｺｰﾄﾞのときに宣言する
+
+//#define	ISP_SPIFLASH_EN	//ISP環境でSPIﾌﾗｯｼｭを書替えるときに宣言する
+				//(自動的に､ﾃﾞﾊﾞｸﾞ情報のUART内蔵ﾓｼﾞｭｰﾙを230400bpsで使用する)
+				//(通常のｱﾌﾟﾘは実行されない)
 
 
 /*
 PUYA32電子ｵﾙｺﾞｰﾙ演奏+音声再生ver1_4
 これは根のｿｰｽｺｰﾄﾞ
 
+・ISP形態でSPIﾌﾗｯｼｭを書替える機能(ISP_SPIFLASH)に対応している｡
+
 ・ﾀｰｹﾞｯﾄはPY32F002A_16ﾋﾟﾝ(内部48MHzｸﾛｯｸ)
+
+以下は電子ｵﾙｺﾞｰﾙとして動作するときの説明である｡
 
 ・複数のSW･単数のCdS･複数のCVDを実装可能｡但しﾎﾟｰﾄ割当てが可能なもの｡
 ・それぞれをｵﾙｺﾞｰﾙ演奏･ﾌﾗｯｼｭ音声再生･ﾌﾟﾛｸﾞﾗﾑ音声再生の開始･中断に充てることができる｡
@@ -89,7 +98,7 @@ PUYA32電子ｵﾙｺﾞｰﾙ演奏+音声再生ver1_4
 W25Qのﾋﾟﾝ接(標準SPIﾓｰﾄﾞ)
 1:CS(2線SPIでは10k*220pの時定数回路を介してCLKに繋ぐ)
 2:DO(2線SPI･3線SPIではDIに繋ぐ)
-3:WP(GNDに接続)
+3:WP(GNDに接続､ISPを利用する場合はVccに接続)
 4:GND
 5:DI
 6:CLK
@@ -107,11 +116,11 @@ PY32F002A(16ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 3:(PB1)SW1/(TIM1_CH3N)ﾌﾞﾘｯｼﾞ･ﾌﾞﾚｰｷ逆相出力
 4:Vcc
 5:(PA9)/(TIM1_CH2)正相出力
-6:(PA13-SWD)ﾃﾞﾊﾞｸﾞ信号
-7:(PA14-SWC)ﾃﾞﾊﾞｸﾞ情報/(USART1_TX)ﾃﾞﾊﾞｸﾞ情報
+6:(PA13-SWD)ﾃﾞﾊﾞｸﾞ信号出力
+7:(PA14-SWC)ISP時のﾃﾞﾊﾞｸﾞ情報出力
 8:(PF2-NRST)SW0=====>PF2はNRST機能を無効にしてGPIO機能に設定しておくこと
-9:(PF0-OSCIN)
-10:(PF1-OSCOUT)
+9:(PF0-OSCIN)/(USART1_RX)ﾃﾞﾊﾞｸﾞ情報入力､UART入力
+10:(PF1-OSCOUT)ﾃﾞﾊﾞｸﾞ情報出力/(USART1_TX)ﾃﾞﾊﾞｸﾞ情報出力､UART出力
 11:(PA0)/(SPI1_MISO)MISO(M25QのDO･SDCのDOに繋ぐ､2線3線SPIでは不使用)
 12:(PA1)BOOT0代替/(SPI1_MOSI)MOSI(M25QのDI･SDCのDIに繋ぐ)
 13:Vss
@@ -132,14 +141,31 @@ PY32F002A(16ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 //==============================================
 //構成情報(ｱﾌﾟﾘｹｰｼｮﾝとﾀｰｹﾞｯﾄﾃﾞﾊﾞｲｽに関わるもの)
 //==============================================
+//UARTのﾎﾟｰﾄ定義
+#define	UART_GPIO	GPIOF			//UART出力のﾎﾟｰﾄ
+#define	UART_BIT	1			//UART出力のﾋﾞｯﾄ
+#define	UART_AF		8			//UART出力のUART_TX交代機能番号
+#define	UART_IN_GPIO	GPIOF			//UART入力のﾎﾟｰﾄ
+#define	UART_IN_BIT	0			//UART入力のﾋﾞｯﾄ
+#define	UART_IN_AF	8			//UART入力のUART_RX交代機能番号
+
 //ﾃﾞﾊﾞｸﾞ信号のﾎﾟｰﾄ定義
 #define	DBS_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ信号のﾎﾟｰﾄ
 #define	DBS_BIT		13			//ﾃﾞﾊﾞｸﾞ信号のﾋﾞｯﾄ
 
 //ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ定義
+#ifdef	ISP_SPIFLASH_EN			//ISP環境でSPIﾌﾗｯｼｭを書替えるとき
+#define	SHDBG_SOFT				//ﾃﾞﾊﾞｸﾞ情報のUARTをｿﾌﾄ実装する
+#define	DBG_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報出力のﾎﾟｰﾄ
+#define	DBG_BIT		14			//ﾃﾞﾊﾞｸﾞ情報出力のﾋﾞｯﾄ
+#else					//電子ｵﾙｺﾞｰﾙ動作のとき
 #define	DBG_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ
-#define	DBG_BIT		14			//ﾃﾞﾊﾞｸﾞ情報のﾋﾞｯﾄ
-#define	DBG_AF		1			//UARTの交代機能番号
+#define	DBG_BIT		1			//ﾃﾞﾊﾞｸﾞ情報のﾋﾞｯﾄ
+#define	DBG_AF		8			//UARTの交代機能番号
+#define	DBG_IN_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ
+#define	DBG_IN_BIT	0			//ﾃﾞﾊﾞｸﾞ情報のﾋﾞｯﾄ
+#define	DBG_IN_AF	8			//UARTの交代機能番号
+#endif
 
 //PWMのﾎﾟｰﾄ定義
 #define	PWM_F_GPIO	GPIOA			//PWM正相のﾎﾟｰﾄ
@@ -168,7 +194,7 @@ PY32F002A(16ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 #define SPI_MOSI_BIT	1			//MOSIのﾋﾞｯﾄ
 #define	SPI_MOSI_AF	10			//MOSIの交代機能番号
 #ifdef SHSPI2				//2線SPIのとき
-#define	SPI_SS_TIME	5			//SSﾈｹﾞｰﾄ待ち時間[us]
+#define	SPI_SS_TIME	10			//SSﾈｹﾞｰﾄ待ち時間[us]
 #define SPI_SS_GPIO	SPI_SCK_GPIO		//SSのﾎﾟｰﾄ
 #define SPI_SS_BIT	SPI_SCK_BIT		//SSのﾋﾞｯﾄ
 #else					//3線SPIまたは4線SPIのとき
@@ -251,7 +277,7 @@ PY32F002A(16ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 //#define	LED3_BIT	2		//LED3のﾋﾞｯﾄ
 
 
-#if	PART_N>0
+#if	PART_N+KB_N>0
 //==============================================
 //ｿﾝｸﾞﾃﾞｰﾀのｲﾝﾃﾞｯｸｽ
 //==============================================
@@ -378,5 +404,15 @@ static const struct VOICES_HDR voiceS_idx[]=
 //==============================================
 //共通ｺｰﾄﾞの呼込み
 //==============================================
+#ifdef ISP_SPIFLASH_EN			//ISP環境でSPIﾌﾗｯｼｭを書替えるとき
+#define	UARTBPS	230400				//UARTは230400bps
+#define	UART_TX					//UART送信を使う
+#define	UART_RX					//UART受信を使う
+#include "../dev_F002A_16.c"			//F002A_16ﾋﾟﾝﾃﾞﾊﾞｲｽｺｰﾄﾞ
+#include "../apl_ISP_SPIFLASH.c"		//ISP実行ｱﾌﾟﾘｹｰｼｮﾝ
+#else					//KB演奏のとき
+#define	UARTBPS	38400				//UARTは38400bps
+#define	UART_RX					//UART受信を使う
 #include "../dev_F002A_16.c"			//F002A_16ﾋﾟﾝﾃﾞﾊﾞｲｽｺｰﾄﾞ
 #include "../apl_SW.c"				//SW操作ｱﾌﾟﾘｹｰｼｮﾝ
+#endif
