@@ -1,13 +1,28 @@
+//==============================================
+//大域変数
+//==============================================
+#if VOICE_S==1				//単一ch実装のとき
 static unsigned char spi_addr;			//SPIｱﾄﾞﾚｽ設定(0=未､1=済)
+#endif
 
 
 //==============================================
-//SSのﾈｹﾞｰﾄ待ちのﾏｸﾛ置換え
+//SPIｾﾚｸﾄ
+//==============================================
+#define	spi_sel()	GPIO_L(SPI_SS_GPIO,SPI_SS_BIT)
+						//SSをL
+
+
+//==============================================
+//SPIﾃﾞｨｾﾚｸﾄ
 //==============================================
 #ifdef SHSPI2				//2線SPIのとき
-#define	SPI_SS_WAIT()	wait_us(SPI_SS_TIME)	//SSがﾈｹﾞｰﾄするまで待つ
-#else					//その他のとき
-#define	SPI_SS_WAIT()				//SSﾈｹﾞｰﾄ待ちをしない
+#define	spi_dis()	GPIO_H(SPI_SS_GPIO,SPI_SS_BIT),wait_us(SPI_SS_TIME)
+						//SSをHにして､SSのﾈｹﾞｰﾄ時間を待つ
+						//直前のSCK=HによりSSはHになる
+#else					//4線SPI､3線SPIのとき
+#define	spi_dis()	GPIO_H(SPI_SS_GPIO,SPI_SS_BIT)
+						//SSをH
 #endif
 
 
@@ -81,9 +96,9 @@ static unsigned char spi_trans(			//受信したﾃﾞｰﾀを返す
 //SCK扱いのﾏｸﾛ置換え
 //==============================================
 #ifdef SHSPI2 				//2線SPIのとき
-#define spi_send(x,y) spi_send_(x,y)		//最終ﾋﾞｯﾄのSCK扱いを有効にする
+#define spi_send(x,y) spi_send_(x,y)		//最終ﾋﾞｯﾄのSCKの扱いを有効にする
 #else					//3線SPIまたは4線SPIのとき
-#define spi_send(x,y) spi_send_(x)		//最終ﾋﾞｯﾄのSCK扱いを無視する
+#define spi_send(x,y) spi_send_(x)		//最終ﾋﾞｯﾄのSCKの扱いを無視する
 #endif
 
 
@@ -98,8 +113,7 @@ static unsigned char spi_trans(			//受信したﾃﾞｰﾀを返す
 static void spi_send_(
 #ifdef SHSPI2 				//2線SPIのとき
 	unsigned char data,			//送信するﾃﾞｰﾀ
-	unsigned char sck_h)			//最終ﾋﾞｯﾄのSCKの扱い
-						//　(2線SPI時のﾊﾟﾜｰﾀﾞｳﾝのため)
+	unsigned char sck_h)			//2線SPIで最終ﾋﾞｯﾄのSCKの扱い
 						//　0=Lにする､1=Hを保持する
 #else					//3線SPIまたは4線SPIのとき
 	unsigned char data)			//送信するﾃﾞｰﾀ
@@ -170,7 +184,8 @@ static void spi_send_(
 						//MISOを入力ﾓｰﾄﾞ
 #endif
 			if(!sck_h) GPIO_L(SPI_SCK_GPIO,SPI_SCK_BIT);
-						//ﾊﾟﾜｰﾀﾞｳﾝ以外はSCKをL
+						//2線SPIで最終ﾋﾞｯﾄのSCKの扱いが
+						//1のときはSCKをLにしない
 		}
 		else			//最終ﾋﾞｯﾄ以外は
 		{
@@ -243,7 +258,6 @@ static unsigned char spi_trans(			//受信したﾃﾞｰﾀを返す
 						//　1ﾊﾞｲﾄ巾でｱｸｾｽすることが重要
 	while(!(SPI1->SR&SPI_SR_RXNE)){};	//受信完了を待つ
 	data=SPI1->DR;				//受信したﾃﾞｰﾀを取込む
-//DBG_C('-');
 //DBG_B(data);
 //DBG_C(')');
 //DBS_L;
@@ -258,9 +272,8 @@ static unsigned char spi_trans(			//受信したﾃﾞｰﾀを返す
 static void spi_set(void)
 {
 
-	GPIO_H(SPI_SS_GPIO,SPI_SS_BIT);		//SSをﾈｹﾞｰﾄする
+	spi_dis();				//ﾃﾞｨｾﾚｸﾄ
 	GPIO_OUT(SPI_SS_GPIO,SPI_SS_BIT);	//SSを出力ﾓｰﾄﾞ
-	SPI_SS_WAIT();				//SSﾈｹﾞｰﾄ時間を待つ
 #ifdef SPI_SOFT				//SPIをｿﾌﾄ実装するとき
 #ifndef SHSPI2				//2線SPIでないとき
 	GPIO_L(SPI_SCK_GPIO,SPI_SCK_BIT);	//SCKをL
@@ -301,8 +314,7 @@ static void spi_set(void)
 static void spi_reset(void)
 {
 
-	GPIO_H(SPI_SS_GPIO,SPI_SS_BIT);		//SSをﾈｹﾞｰﾄする
-	SPI_SS_WAIT();				//SSﾈｹﾞｰﾄ時間を待つ
+	spi_dis();				//ﾃﾞｨｾﾚｸﾄ
 #ifndef SHSPI2				//2線SPIでないとき
 #ifdef SPI_SCK_PU			//SCKをﾌﾟﾙｱｯﾌﾟするとき
 	GPIO_INPU(SPI_SCK_GPIO,SPI_SCK_BIT);	//SCKをﾌﾟﾙｱｯﾌﾟ入力
@@ -349,12 +361,9 @@ static void spi_reset(void)
 static void W25_PWR_DOWN(void)
 {
 
-	GPIO_H(SPI_SS_GPIO,SPI_SS_BIT);		//SSをﾈｹﾞｰﾄする
-	SPI_SS_WAIT();				//SSﾈｹﾞｰﾄ時間を待つ
-	GPIO_L(SPI_SS_GPIO,SPI_SS_BIT);		//ﾁｯﾌﾟｾﾚｸﾄ
+	spi_sel();				//ｾﾚｸﾄ
 	spi_send(W25_PwrDwn,1);			//ﾊﾟﾜｰﾀﾞｳﾝｺﾏﾝﾄﾞ
-	GPIO_H(SPI_SS_GPIO,SPI_SS_BIT);		//SSをﾈｹﾞｰﾄする
-	SPI_SS_WAIT();				//SSﾈｹﾞｰﾄ時間を待つ
+	spi_dis();				//ﾃﾞｨｾﾚｸﾄ
 	wait_us(3);				//ﾊﾟﾜｰﾀﾞｳﾝ時間を待つ
 }
 #endif
@@ -366,12 +375,9 @@ static void W25_PWR_DOWN(void)
 static void W25_PWR_UP(void)
 {
 
-	GPIO_H(SPI_SS_GPIO,SPI_SS_BIT);		//SSをﾈｹﾞｰﾄする
-	SPI_SS_WAIT();				//SSﾈｹﾞｰﾄ時間を待つ
-	GPIO_L(SPI_SS_GPIO,SPI_SS_BIT);		//ﾁｯﾌﾟｾﾚｸﾄ
+	spi_sel();				//ｾﾚｸﾄ
 	spi_send(W25_Re_PwrDwn,0);		//ﾊﾟﾜｰﾀﾞｳﾝ解除ｺﾏﾝﾄﾞ
-	GPIO_H(SPI_SS_GPIO,SPI_SS_BIT);		//SSをﾈｹﾞｰﾄする
-	SPI_SS_WAIT();				//SSﾈｹﾞｰﾄ時間を待つ
+	spi_dis();				//ﾃﾞｨｾﾚｸﾄ
 	wait_us(3);				//ﾊﾟﾜｰｱｯﾌﾟ時間を待つ
 }
 #endif

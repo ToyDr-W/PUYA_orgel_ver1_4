@@ -36,12 +36,12 @@ $bbb
 ;音価ﾌﾟﾘｽｹｰﾙ値生成ﾏｸﾛ
 ;　ﾊﾟﾗﾒｰﾀ:ﾃﾝﾎﾟ値[4分音符/分]
 ;　音価ﾌﾟﾘｽｹｰﾙ値とは音価の基本単位にしている4分音符の1/48の時間を
-;　　演奏処理周期(PWM_PR*SONG_PS)をﾍﾞｰｽに作るためのﾌﾟﾘｽｹｰﾙ値
-;　　=60*1000000us/ﾃﾝﾎﾟ/48/(PWM_PR*SONG_PS)
+;　　演奏処理周期(PWM_STEP/SYS_CLK*SONG_PS)をﾍﾞｰｽに作るためのﾌﾟﾘｽｹｰﾙ値
+;　　=60*1000000us/ﾃﾝﾎﾟ/48/(PWM_STEP/SYS_CLK*SONG_PS)
 ;==============================================
 	macro
 	ops_mac	$ttt
-	dcw	(100000000/($ttt)/PWM_PR/SONG_PS/8+5)/10
+	dcw	(100000000/($ttt)*SYS_CLK/PWM_STEP/SONG_PS/8+5)/10
 	mend
 
 ;==============================================
@@ -71,7 +71,7 @@ $bbb
 ;==============================================
 	macro
 	eps_mac	$eee
-	dcd	(10*($eee)/PWM_PR/SONG_PS+5)/10
+	dcd	(10*($eee)*SYS_CLK/PWM_STEP/SONG_PS+5)/10
 	mend
 
 ;==============================================
@@ -83,7 +83,7 @@ $bbb
 ;==============================================
 	macro
 	pps_mac	$ppp
-	dcd	(10*($ppp)/PWM_PR/SONG_PS+5)/10
+	dcd	(10*($ppp)*SYS_CLK/PWM_STEP/SONG_PS+5)/10
 	mend
 
 ;==============================================
@@ -237,7 +237,7 @@ POL	equ	2
 ;==============================================
 	macro
 	efw_mac	$kkk,$aaa,$sss
-	dcw	0x4000+($kkk&0x1f)*256+(((($sss*PWM_PR*SONG_PS/1000)*256)/1000)&0xff)
+	dcw	0x4000+($kkk&0x1f)*256+(((($sss*PWM_STEP/SYS_CLK*SONG_PS/1000)*256)/1000)&0xff)
 	mend
 	macro
 	efa_mac	$kkk,$aaa,$sss

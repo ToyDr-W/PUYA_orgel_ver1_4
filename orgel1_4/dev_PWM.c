@@ -100,6 +100,7 @@ static void dev_pwm_stop(void)
 #endif
 //DBG_C('6');
 }
+#endif
 
 
 //==============================================
@@ -133,7 +134,6 @@ static void dev_pwm_start(void)
 	TIM1->DIER=TIM_DIER_UIE;		//TIM1更新割込み許可
 //DBG_C('5');
 }
-#endif
 
 
 //==============================================

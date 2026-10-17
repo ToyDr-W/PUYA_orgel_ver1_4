@@ -100,6 +100,7 @@ static void dev_pwm_stop(void)
 #endif
 //DBG_C('6');
 }
+#endif
 
 
 //==============================================
@@ -133,7 +134,6 @@ static void dev_pwm_start(void)
 	TIM1->DIER=TIM_DIER_UIE;		//TIM1更新割込み許可
 //DBG_C('5');
 }
-#endif
 
 
 //==============================================
@@ -164,14 +164,18 @@ static void pwm_init(void)
 	TIM1->CCMR1|=(TIM_CCMR1_OC2M_2|TIM_CCMR1_OC2M_1|TIM_CCMR1_OC2PE);
 						//CH2をPWMﾓｰﾄﾞ1､ﾌﾟﾘﾛｰﾄﾞ有効
 	TIM1->CCER|=TIM_CCER_CC2E;		//CH2をﾋﾟﾝ出力
+#ifdef PWM_F_BIT			//正相出力ﾋﾞｯﾄが実装されているとき
 	GPIO_AF(PWM_F_GPIO,PWM_F_BIT,PWM_F_AF);	//PWM正相を交代機能設定
+#endif
 
 #if BTL==1				//ｺﾝﾌﾟﾘ出力のとき
 //DBG_C('c');
 	TIM1->CCR2=PWM_STEP/2;			//CH2のDCを50%
 	TIM1->BDTR|=PWM_DB_CMP;			//ﾃﾞｯﾄﾞﾀｲﾑ設定
 	TIM1->CCER|=TIM_CCER_CC2NE;		//CH2Nをﾋﾟﾝ出力
+#ifdef PWM_C_BIT			//ｺﾝﾌﾟﾘ出力ﾋﾞｯﾄが実装されているとき
 	GPIO_AF(PWM_C_GPIO,PWM_C_BIT,PWM_C_AF);	//PWMｺﾝﾌﾟﾘを交代機能設定
+#endif
 #endif
 
 	//PWM設定(TIM1_CH4)
@@ -180,7 +184,9 @@ static void pwm_init(void)
 	TIM1->CCMR2|=(TIM_CCMR2_OC4M_2|TIM_CCMR2_OC4M_1|TIM_CCMR2_OC4PE);
 						//CH4をPWMﾓｰﾄﾞ1､ﾌﾟﾘﾛｰﾄﾞ有効
 	TIM1->CCER|=TIM_CCER_CC4E;		//CH4をﾋﾟﾝ出力
+#ifdef PWM_R_BIT			//逆相出力ﾋﾞｯﾄが実装されているとき
 	GPIO_AF(PWM_R_GPIO,PWM_R_BIT,PWM_R_AF);	//PWM逆相を交代機能設定
+#endif
 #endif
 #if BTL==3				//ﾌﾞﾚｰｷ出力のとき
 //DBG_C('k');

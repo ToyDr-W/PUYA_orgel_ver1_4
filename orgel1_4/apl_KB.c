@@ -1,6 +1,9 @@
 //SW･CdS･CVDで電子ｵﾙｺﾞｰﾙを制御するｱﾌﾟﾘｹｰｼｮﾝの共通機能部
 
 //これはapl_SW.cをﾍﾞｰｽにｷｰﾎﾞｰﾄﾞ操作に対応したｻﾝﾌﾟﾙ｡
+//I2Cは不使用｡SPIは使用可｡
+//SW類の接続ﾎﾟｰﾄは確保しているが､このｱﾌﾟﾘでは不使用｡
+//UARTから受信したKB演奏ﾃﾞｰﾀに従って､orgelｴﾝｼﾞﾝへ音符ｺｰﾄﾞを送って演奏させる｡
 
 //下記はｵﾘｼﾞﾅﾙのapl_SW.cの説明
 //複数のSW･１個のCdS･複数のCVDを実装可能｡但しﾎﾟｰﾄ割当てが可能なもの｡
@@ -33,6 +36,10 @@
 //ｵﾙｺﾞｰﾙ箱への応用では以下を宣言しておくこと
 //#define	CdS_FUTA	//蓋を開ける(明)とｵﾝ判定する
 //#define	CdS_THR	100	//判定閾値を固定の宣言値にする
+
+#define		VOICEN_IMA	//音声NがIMA_ADPCMｴﾝｺｰﾄﾞのときに宣言する
+#define		VOICEI_IMA	//音声IがIMA_ADPCMｴﾝｺｰﾄﾞのときに宣言する
+#define		VOICES_IMA	//音声SがIMA_ADPCMｴﾝｺｰﾄﾞのときに宣言する
 
 
 //==============================================
@@ -909,8 +916,21 @@ static void apl_init(void)
 	//KB演奏の初期設定
 	//KB演奏で使う音源波形とｴﾝﾍﾞﾛｰﾌﾟ波形はmain.cで宣言しておくこと
 //DBG_C('k');
-	KB_START(0,&wave_SIN14,&enve_EXP,0);
-//DBG_C('\n');
+	KB_START(0,				//KB演奏ﾊﾟｰﾄ番号(0起算)
+		(100000000/30/PWM_PR/SONG_PS/8+5)/10,
+						//音価ﾌﾟﾘｽｹｰﾙ値(ﾃﾝﾎﾟ=30)
+		&wave_SIN14,			//音源波形ﾃｰﾌﾞﾙｱﾄﾞﾚｽ
+		&enve_EXP,
+		(23000*10*SYS_CLK/PWM_STEP/SONG_PS+5)/10,
+						//ｴﾝﾍﾞﾛｰﾌﾟ処理ﾌﾟﾘｽｹｰﾙ値
+						//　EPS*ENV相当の値(23000)
+		0,	//&pitch_FIRE		//ﾋﾟｯﾁﾍﾞﾝﾄﾞ波形ﾃｰﾌﾞﾙｱﾄﾞﾚｽ
+		0,	//(1000*10*SYS_CLK/PWM_STEP/SONG_PS+5)/10
+						//ﾋﾟｯﾁﾍﾞﾝﾄﾞ処理ﾌﾟﾘｽｹｰﾙ値
+						//　PPS*PIT相当の値(1000)
+		100);				//音量(1～100)
+DBG_C('\n');
+DBG_C('!');
 }
 
 
@@ -1115,7 +1135,8 @@ static void CB_KOYUU(void)
 #ifdef SLEEP_EN				//Sleep機能を実装するとき
 	static unsigned short sleep_tmr=0;	//Sleepﾀｲﾏｰ
 #endif
-	unsigned char res,cnt,n;
+	short res;
+	unsigned char cnt,n;
 #if PART_N>0				//ｵﾙｺﾞｰﾙ演奏を実装するとき
 	struct SONG_IDX *p;
 #endif
@@ -1161,8 +1182,9 @@ static void CB_KOYUU(void)
 #endif
 
 	//KB演奏
-	res=DBG_IN();				//動作指示を受信する
-	if(('0'<=res)&&(res<='9'))		//'0'～'9'のとき
+	res=uart_in()&0x00ff;			//動作指示を受信する
+	if(res==0xff);				//入力が無効のときは何もしない
+	else if(('0'<=res)&&(res<='9'))		//'0'～'9'のとき
 	{
 DBG_C('o');
 DBG_S(res-'0');
@@ -1258,9 +1280,9 @@ DBG_C('k');
 		default:
 			onpu=0;			//停止
 		}
-		KB_ONPU(0,onpu);		//KB演奏の音符設定
 DBG_S(onpu);
 DBG_C('\n');
+		KB_ONPU(0,onpu);		//KB演奏の音符設定
 	}
 }
 
