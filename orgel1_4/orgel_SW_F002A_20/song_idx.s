@@ -148,6 +148,7 @@ song_idx_bgn
  ;son_mac song_MATSUBARA,song_MATSUBARA_DEF 
  ;son_mac song_MERIHITUJI,song_MERIHITUJI_DEF 
  ;son_mac song_MICKY,song_MICKY_DEF 
+ ;son_mac song_MIRAIHE3,song_MIRAIHE3_DEF 
  ;son_mac song_MOMIJI,song_MOMIJI_DEF 
  ;son_mac song_MOMOTARO,song_MOMOTARO_DEF 
  ;son_mac song_MORIKUMA,song_MORIKUMA_DEF 

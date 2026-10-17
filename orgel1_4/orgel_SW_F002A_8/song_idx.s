@@ -27,14 +27,14 @@ song_idx_bgn
  ;son_mac song__AKI2,song__AKI2_DEF 
  ;son_mac song__AKI3,song__AKI3_DEF 
  ;son_mac song__AKI4,song__AKI4_DEF 
- son_mac song__CARIBBEAN,song__CARIBBEAN_DEF 
+ ;son_mac song__CARIBBEAN,song__CARIBBEAN_DEF 
  ;son_mac song__FUYU2,song__FUYU2_DEF 
  ;son_mac song__FUYU3,song__FUYU3_DEF 
  ;son_mac song__FUYU4,song__FUYU4_DEF 
  ;son_mac song__HARU2,song__HARU2_DEF 
  ;son_mac song__HARU3,song__HARU3_DEF 
  ;son_mac song__HARU4,song__HARU4_DEF 
- son_mac song__HAWAIIAN,song__HAWAIIAN_DEF 
+ ;son_mac song__HAWAIIAN,song__HAWAIIAN_DEF 
  ;son_mac song__INDONESIAN,song__INDONESIAN_DEF 
  ;son_mac song__LATIN,song__LATIN_DEF 
  ;son_mac song__LATINFOLK,song__LATINFOLK_DEF 
@@ -43,7 +43,7 @@ song_idx_bgn
  ;son_mac song_AIAI,song_AIAI_DEF 
  ;son_mac song_AISATSU,song_AISATSU_DEF 
  ;son_mac song_AKATONBO,song_AKATONBO_DEF 
- ;son_mac song_ALOHAOE3,song_ALOHAOE3_DEF 
+ son_mac song_ALOHAOE3,song_ALOHAOE3_DEF 
  ;son_mac song_AMAZING,song_AMAZING_DEF 
  ;son_mac song_AMBULANCE,song_AMBULANCE_DEF 
  ;son_mac song_AMEFURI,song_AMEFURI_DEF 
@@ -52,14 +52,14 @@ song_idx_bgn
  ;son_mac song_ANNI,song_ANNI_DEF 
  ;son_mac song_ANPANMARCH,song_ANPANMARCH_DEF 
  ;son_mac song_ANPANTAISO,song_ANPANTAISO_DEF 
- ;son_mac song_AOIMENO,song_AOIMENO_DEF 
+ son_mac song_AOIMENO,song_AOIMENO_DEF 
  ;son_mac song_ARIA,song_ARIA_DEF 
  ;son_mac song_AU,song_AU_DEF 
  ;son_mac song_AWATENBOU,song_AWATENBOU_DEF 
  ;son_mac song_AWATETOKOYA,song_AWATETOKOYA_DEF 
  ;son_mac song_AWAY,song_AWAY_DEF 
- ;son_mac song_BAMBA,song_BAMBA_DEF 
- ;son_mac song_BANANABOAT,song_BANANABOAT_DEF 
+ son_mac song_BAMBA,song_BAMBA_DEF 
+ son_mac song_BANANABOAT,song_BANANABOAT_DEF 
  ;son_mac song_BIRTHDAY,song_BIRTHDAY_DEF 
  ;son_mac song_BIWAKO,song_BIWAKO_DEF 
  ;son_mac song_BLINKER,song_BLINKER_DEF 
@@ -148,6 +148,7 @@ song_idx_bgn
  ;son_mac song_MATSUBARA,song_MATSUBARA_DEF 
  ;son_mac song_MERIHITUJI,song_MERIHITUJI_DEF 
  ;son_mac song_MICKY,song_MICKY_DEF 
+ ;son_mac song_MIRAIHE3,song_MIRAIHE3_DEF 
  ;son_mac song_MOMIJI,song_MOMIJI_DEF 
  ;son_mac song_MOMOTARO,song_MOMOTARO_DEF 
  ;son_mac song_MORIKUMA,song_MORIKUMA_DEF 

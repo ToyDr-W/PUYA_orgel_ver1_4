@@ -1,6 +1,7 @@
 //#define	SHDBS		//ﾃﾞﾊﾞｸﾞ信号を出力するときに宣言する
 //#define	SHDBG		//ﾃﾞﾊﾞｸﾞ情報を出力するときに宣言する
 //#define	SHBPS	115200	//ﾃﾞﾊﾞｸﾞ情報のﾎﾞｰﾚｰﾄを宣言する(ﾃﾞﾌｫﾙﾄ値は38400bps)
+//#define	SHDBG_SOFT	//ﾃﾞﾊﾞｸﾞ情報のUARTをｿﾌﾄ実装するときに宣言する		
 
 //#define	I2C_SOFT	//I2Cをｿﾌﾄ実装するときに宣言する
 #define		SLEEP_EN	//Sleep機能を実装するときに宣言する
@@ -28,12 +29,30 @@
 #define		VOICEI_IMA	//音声IがIMA_ADPCMｴﾝｺｰﾄﾞのときに宣言する
 #define		VOICES_IMA	//音声SがIMA_ADPCMｴﾝｺｰﾄﾞのときに宣言する
 
+//#define	ISP_SPIFLASH_EN	//ISP環境でSPIﾌﾗｯｼｭを書替えるときに宣言する
+				//(自動的に､ﾃﾞﾊﾞｸﾞ情報のUART内蔵ﾓｼﾞｭｰﾙを230400bpsで使用する)
+				//(通常のｱﾌﾟﾘは実行されない)
+
+
+//==============================================
+//ﾋﾟﾝ構成ﾊﾟﾀｰﾝを下記から1行のみを有効とすること
+//==============================================
+//#define	CONF1
+//#define	CONF2
+//#define	CONF3
+//#define	CONF4
+#define	CONF5
+
 
 /*
 PUYA32電子ｵﾙｺﾞｰﾙ演奏+音声再生ver1_4
 これは根のｿｰｽｺｰﾄﾞ
 
+・ISP形態でSPIﾌﾗｯｼｭを書替える機能(ISP_SPIFLASH)に対応している｡
+
 ・ﾀｰｹﾞｯﾄはPY32F002A_8ﾋﾟﾝ(内部48MHzｸﾛｯｸ)
+
+以下は電子ｵﾙｺﾞｰﾙとして動作するときの説明である｡
 
 ・複数のSW･単数のCdS･複数のCVDを実装可能｡但しﾎﾟｰﾄ割当てが可能なもの｡
 ・それぞれをｵﾙｺﾞｰﾙ演奏･ﾌﾗｯｼｭ音声再生･ﾌﾟﾛｸﾞﾗﾑ音声再生の開始･中断に充てることができる｡
@@ -85,7 +104,7 @@ PUYA32電子ｵﾙｺﾞｰﾙ演奏+音声再生ver1_4
 W25Qのﾋﾟﾝ接(標準SPIﾓｰﾄﾞ)
 1:CS(2線SPIでは10k*220pの時定数回路を介してCLKに繋ぐ)
 2:DO(2線SPI･3線SPIではDIに繋ぐ)
-3:WP(GNDに接続)
+3:WP(GNDに接続､ISPを利用する場合はVccに接続)
 4:GND
 5:DI
 6:CLK
@@ -95,21 +114,79 @@ W25Qのﾋﾟﾝ接(標準SPIﾓｰﾄﾞ)
 
 //==============================================
 //PY32のﾋﾟﾝ接
-//SPIとI2Cは同時使用できない
-//SPIは3線SPIまたは2線SPIで接続する
-//ｼﾝｸﾞﾙ出力以外ではﾃﾞﾊﾞｸﾞ信号とﾃﾞﾊﾞｸﾞ情報を出力できない
+//ﾋﾟﾝ割当ての事情は"ドキュメント\ＰＵＹＡ３２の８ピン割り当て.xls"を参照｡
+//構成条件毎に最適なﾋﾟﾝ割り当てを考える｡
 //==============================================
 PY32F002A(8ﾋﾟﾝ)のﾎﾟｰﾄの割当て
+
+CONF1
+I2C内蔵ﾓｼﾞｭｰﾙ+3線SPIのとき
 1:Vcc
 2:(PA4)
-2:(PA10)SS(M25QのCS･SDCのCSに繋ぐ､2線SPIでは不使用)/(I2C_SDA)SDA(24FCのSDAに繋ぐ)
-3:(PA3)SCK(M25QのCLK･SDCのCLKに繋ぐ)/(I2C_SCL)SCL(24FCのSCLに繋ぐ)
+2:(PA10)/(I2C_SDA)SDA(24FCのSDAに繋ぐ)/(USART1_TX)UART出力
+3:(PA3)/(I2C_SCL)(24FCのSCLに繋ぐ)/(USART1_RX)UART入力
 4:(PA14-SWC)
-4:(PB3)/(TIM1_CH2)正相出力
-5:(PA13-SWD)SW0､MOSI(M25QのDI･SDCのDIに繋ぐ)
-6:(PA2)SW0/(ADC_IN2)CdS､CVD0
+4:(PB3)ﾃﾞﾊﾞｸﾞ情報出力/(TIM1_CH2)正相出力
+5:(PA13-SWD)SS(M25QのCS･SDCのCSに繋ぐ)
+6:(PA2)SW0､SCK(M25QのCLK･SDCのCLKに繋ぐ)/ADC_IN2)CVD1
 6:(PF2-NRST)=====>PF2はNRST機能を無効にしてGPIO機能に設定しておくこと
-7:(PA1)BOOT0代替､ﾃﾞﾊﾞｸﾞ信号､ﾃﾞﾊﾞｸﾞ情報/(TIM1_CH2N)ｺﾝﾌﾟﾘ出力/(CH1_CH4)ﾌﾞﾘｯｼﾞ･ﾌﾞﾚｰｷ逆相出力
+7:(PA1)BOOT0代替､SW1､MOSI(M25QのDI･SDCのDIに繋ぐ)/(ADC_IN1)CdS､CVD0
+8:Vss
+
+CONF2
+I2C内蔵ﾓｼﾞｭｰﾙ+2線SPIのとき
+1:Vcc
+2:(PA4)
+2:(PA10)/(I2C_SDA)SDA(24FCのSDAに繋ぐ)/(USART1_TX)UART出力
+3:(PA3)/(I2C_SCL)(24FCのSCLに繋ぐ)/(USART1_RX)UART入力
+4:(PA14-SWC)
+4:(PB3)(TIM1_CH2)正相出力
+5:(PA13-SWD)SCK(M25QのCLK･SDCのCLKに繋ぐ)
+6:(PA2)SW0､MOSI(M25QのDI･SDCのDIに繋ぐ)/ADC_IN2)CdS､CVD0
+6:(PF2-NRST)=====>PF2はNRST機能を無効にしてGPIO機能に設定しておくこと
+7:(PA1)BOOT0代替､ﾃﾞﾊﾞｸﾞ情報出力/(TIM1_CH2N)ｺﾝﾌﾟﾘ出力/(TIM1_CH4)ﾌﾞﾘｯｼﾞ･ﾌﾞﾚｰｷ逆相出力
+8:Vss
+
+CONF3
+I2C不使用+SPI内蔵ﾓｼﾞｭｰﾙのとき
+1:Vcc
+2:(PA4)SS(M25QのCS･SDCのCSに繋ぐ)
+2:(PA10)/(USART1_RX)UART入力
+3:(PA3)SW2/(SPI1_MOSI)MOSI(M25QのDI･SDCのDIに繋ぐ)/(ADC_IN3)CdS､CVD0
+4:(PA14-SWC)/(USART1_TX)UART出力
+4:(PB3)(TIM1_CH2)正相出力
+5:(PA13-SWD)SW0/(SPI1_MISO)MISO(M25QのDO･SDCのDOに繋ぐ)
+6:(PA2)SW1/(SPI1_SCK)SCK(M25QのCLK･SDCのCLKに繋ぐ)/(ADC_IN2)CVD1
+6:(PF2-NRST)=====>PF2はNRST機能を無効にしてGPIO機能に設定しておくこと
+7:(PA1)BOOT0代替､ﾃﾞﾊﾞｸﾞ情報出力/(TIM1_CH2N)ｺﾝﾌﾟﾘ出力
+8:Vss
+
+CONF4
+I2C不使用+3線SPIのとき
+1:Vcc
+2:(PA4)SW0､LED0/(ADC_IN4)CVD2
+2:(PA10)/(USART1_RX)UART入力
+3:(PA3)SW1､MOSI(M25QのDI･SDCのDIに繋ぐ)/(ADC_IN3)CVD1
+4:(PA14-SWC)/(USART1_TX)UART出力
+4:(PB3)(TIM1_CH2)正相出力
+5:(PA13-SWD)SS(M25QのCS･SDCのCSに繋ぐ)
+6:(PA2)SW2､SCK(M25QのCLK･SDCのCLKに繋ぐ)/(ADC_IN2)CdS､CVD0
+6:(PF2-NRST)=====>PF2はNRST機能を無効にしてGPIO機能に設定しておくこと
+7:(PA1)BOOT0代替､ﾃﾞﾊﾞｸﾞ情報出力/(TIM1_CH4)ﾌﾞﾘｯｼﾞ･ﾌﾞﾚｰｷ逆相出力
+8:Vss
+
+CONF5
+I2C不使用+2線SPIのとき
+1:Vcc
+2:(PA4)SW0､LED0/(ADC_IN4)CVD2
+2:(PA10)/(USART1_RX)UART入力
+3:(PA3)SW1､MOSI(M25QのDI･SDCのDIに繋ぐ)/(ADC_IN3)CVD1
+4:(PA14-SWC)/(USART1_TX)UART出力
+4:(PB3)(TIM1_CH2)正相出力
+5:(PA13-SWD)SCK(M25QのCLK･SDCのCLKに繋ぐ)
+6:(PA2)SW2､LED1/(ADC_IN2)CdS､CVD0
+6:(PF2-NRST)=====>PF2はNRST機能を無効にしてGPIO機能に設定しておくこと
+7:(PA1)BOOT0代替､ﾃﾞﾊﾞｸﾞ情報出力/(TIM1_CH4)ﾌﾞﾘｯｼﾞ･ﾌﾞﾚｰｷ逆相出力
 8:Vss
 */
 
@@ -125,27 +202,26 @@ PY32F002A(8ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 //==============================================
 //構成情報(ｱﾌﾟﾘｹｰｼｮﾝとﾀｰｹﾞｯﾄﾃﾞﾊﾞｲｽに関わるもの)
 //==============================================
-#define	SHDBG_SOFT				//ﾃﾞﾊﾞｸﾞ情報のUARTをｿﾌﾄ実装する
-#if BTL==0				//ｼﾝｸﾞﾙ出力のとき
-//ﾃﾞﾊﾞｸﾞ信号のﾎﾟｰﾄ定義
-#define	DBS_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ信号のﾎﾟｰﾄ
-#define	DBS_BIT		1			//ﾃﾞﾊﾞｸﾞ信号のﾋﾞｯﾄ
+#ifdef CONF1				//構成1のとき
+//UARTのﾎﾟｰﾄ定義
+#define	UART_GPIO	GPIOA			//UART出力のﾎﾟｰﾄ
+#define	UART_BIT	10			//UART出力のﾋﾞｯﾄ
+#define	UART_AF		8			//UART出力のUART_TX交代機能番号
+#define	UART_IN_GPIO	GPIOA			//UART入力のﾎﾟｰﾄ
+#define	UART_IN_BIT	3			//UART入力のﾋﾞｯﾄ
+#define	UART_IN_AF	1			//UART入力のUART_RX交代機能番号
 
 //ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ定義
-#define	DBG_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ
-#define	DBG_BIT		1			//ﾃﾞﾊﾞｸﾞ情報のﾋﾞｯﾄ
-#endif
+#define	SHDBG_SOFT				//ﾃﾞﾊﾞｸﾞ情報のUARTをｿﾌﾄ実装する
+#define	DBG_GPIO	GPIOB			//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ
+#define	DBG_BIT		3			//ﾃﾞﾊﾞｸﾞ情報のﾋﾞｯﾄ
 
 //PWMのﾎﾟｰﾄ定義
+#ifndef SHDBG				//ﾃﾞﾊﾞｸﾞ情報を出力しないとき
 #define	PWM_F_GPIO	GPIOB			//PWM正相のﾎﾟｰﾄ
 #define	PWM_F_BIT	3			//PWM正相のﾋﾞｯﾄ
 #define	PWM_F_AF	1			//PWM正相の交代機能番号
-#define	PWM_R_GPIO	GPIOA			//PWM逆相のﾎﾟｰﾄ
-#define	PWM_R_BIT	1			//PWM逆相のﾋﾞｯﾄ
-#define	PWM_R_AF	13			//PWM逆相の交代機能番号
-#define	PWM_C_GPIO	GPIOA			//PWM相補のﾎﾟｰﾄ
-#define	PWM_C_BIT	1			//PWM相補のﾋﾞｯﾄ
-#define	PWM_C_AF	14			//PWM相補の交代機能番号
+#endif
 
 //I2Cのﾎﾟｰﾄ定義
 #define I2C_SCL_GPIO	GPIOA			//SCLのﾎﾟｰﾄ
@@ -159,11 +235,11 @@ PY32F002A(8ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 #define	SPI_SOFT				//SPIをｿﾌﾄ実装する
 #define	SHSPI3					//3線SPIで繋ぐ
 #define SPI_SCK_GPIO	GPIOA			//SCKのﾎﾟｰﾄ
-#define SPI_SCK_BIT	3			//SCKのﾋﾞｯﾄ
+#define SPI_SCK_BIT	2			//SCKのﾋﾞｯﾄ
 #define SPI_MOSI_GPIO	GPIOA			//MOSIのﾎﾟｰﾄ
-#define SPI_MOSI_BIT	13			//MOSIのﾋﾞｯﾄ
+#define SPI_MOSI_BIT	1			//MOSIのﾋﾞｯﾄ
 #define SPI_SS_GPIO	GPIOA			//SSのﾎﾟｰﾄ
-#define SPI_SS_BIT	10			//SSのﾋﾞｯﾄ
+#define SPI_SS_BIT	13			//SSのﾋﾞｯﾄ
 #define SPI_MISO_GPIO	SPI_MOSI_GPIO		//MISOのﾎﾟｰﾄ
 #define SPI_MISO_BIT	SPI_MOSI_BIT		//MISOのﾋﾞｯﾄ
 
@@ -175,6 +251,7 @@ PY32F002A(8ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 #define	SPI_MISO_PU				//SPI_MISOをﾌﾟﾙｱｯﾌﾟする
 //#define	SPI_MISO_PD			//SPI_MISOをﾌﾟﾙﾀﾞｳﾝする
 
+
 //SW0のﾎﾟｰﾄ定義
 #define	SW0_GPIO	GPIOA			//SW0のﾎﾟｰﾄ
 #define	SW0_EXTI_PORT	0			//SW0のEXTIﾎﾟｰﾄ(0=PA､1=PB､2=PF)
@@ -184,7 +261,317 @@ PY32F002A(8ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 #define SW0_TIMER				//SW0はﾀｲﾏｰﾓｰﾄﾞ
 //#define	SW0_REAL			//SW0はﾘｱﾙﾓｰﾄﾞ
 #define	SW0_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
-					//SW0の操作対象 
+						//SW0の操作対象 
+
+//SW1のﾎﾟｰﾄ定義
+#define	SW1_GPIO	GPIOA			//SW1のﾎﾟｰﾄ
+#define	SW1_EXTI_PORT	0			//SW1のEXTIﾎﾟｰﾄ(0=PA､1=PB､2=PF)
+#define	SW1_BIT		1			//SW1のﾋﾞｯﾄ
+#define	SW1_INV					//SW1入力は負論理
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define SW1_TIMER				//SW1はﾀｲﾏｰﾓｰﾄﾞ
+//#define	SW1_REAL			//SW1はﾘｱﾙﾓｰﾄﾞ
+#define	SW1_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//SW1の操作対象 
+
+//CdSのﾎﾟｰﾄ定義
+#define	CdS_GPIO	GPIOA			//CdSのﾎﾟｰﾄ
+#define	CdS_BIT		1			//CdSのﾋﾞｯﾄ
+#define	CdS_CHSEL	0x0002			//CdSのADCCHSEL
+//#define	CdS_INV				//CdS入力は負論理(暗=L)
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define CdS_TIMER				//CdSはﾀｲﾏｰﾓｰﾄﾞ
+//#define	CdS_REAL			//CdSはﾘｱﾙﾓｰﾄﾞ
+#define	CdS_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//CdSの操作対象
+
+//CVD0のﾎﾟｰﾄ定義
+#define	CVD0_GPIO	GPIOA			//CVD0のﾎﾟｰﾄ
+#define	CVD0_BIT	1			//CVD0のﾋﾞｯﾄ
+#define	CVD0_CHSEL	0x0002			//CVD0のADCCHSEL
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define CVD0_TIMER				//CVD0はﾀｲﾏｰﾓｰﾄﾞ
+//#define	CVD0_REAL			//CVD0はﾘｱﾙﾓｰﾄﾞ
+#define	CVD0_CNT	ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//CVD0の操作対象
+
+//CVD1のﾎﾟｰﾄ定義
+#define	CVD1_GPIO	GPIOA			//CVD1のﾎﾟｰﾄ
+#define	CVD1_BIT	2			//CVD1のﾋﾞｯﾄ
+#define	CVD1_CHSEL	0x0004			//CVD1のADCCHSEL
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define CVD1_TIMER				//CVD1はﾀｲﾏｰﾓｰﾄﾞ
+//#define	CVD0_REAL			//CVD1はﾘｱﾙﾓｰﾄﾞ
+#define	CVD1_CNT	ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//CVD1の操作対象
+#endif
+
+//----------------------------------------------
+#ifdef CONF2				//構成2のとき
+//UARTのﾎﾟｰﾄ定義
+#define	UART_GPIO	GPIOA			//UART出力のﾎﾟｰﾄ
+#define	UART_BIT	10			//UART出力のﾋﾞｯﾄ
+#define	UART_AF		8			//UART出力のUART_TX交代機能番号
+#define	UART_IN_GPIO	GPIOA			//UART入力のﾎﾟｰﾄ
+#define	UART_IN_BIT	3			//UART入力のﾋﾞｯﾄ
+#define	UART_IN_AF	1			//UART入力のUART_RX交代機能番号
+
+//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ定義
+#define	SHDBG_SOFT				//ﾃﾞﾊﾞｸﾞ情報のUARTをｿﾌﾄ実装する
+#define	DBG_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ
+#define	DBG_BIT		1			//ﾃﾞﾊﾞｸﾞ情報のﾋﾞｯﾄ
+
+//PWMのﾎﾟｰﾄ定義
+#define	PWM_F_GPIO	GPIOB			//PWM正相のﾎﾟｰﾄ
+#define	PWM_F_BIT	3			//PWM正相のﾋﾞｯﾄ
+#define	PWM_F_AF	1			//PWM正相の交代機能番号
+#ifndef SHDBG				//ﾃﾞﾊﾞｸﾞ情報を出力しないとき
+#define	PWM_R_GPIO	GPIOA			//PWM逆相のﾎﾟｰﾄ
+#define	PWM_R_BIT	1			//PWM逆相のﾋﾞｯﾄ
+#define	PWM_R_AF	13			//PWM逆相の交代機能番号
+#define	PWM_C_GPIO	GPIOA			//PWM相補のﾎﾟｰﾄ
+#define	PWM_C_BIT	1			//PWM相補のﾋﾞｯﾄ
+#define	PWM_C_AF	14			//PWM相補の交代機能番号
+#endif
+
+//I2Cのﾎﾟｰﾄ定義
+#define I2C_SCL_GPIO	GPIOA			//SCLのﾎﾟｰﾄ
+#define I2C_SCL_BIT	3			//SCLのﾋﾞｯﾄ
+#define	I2C_SCL_AF	12			//SCLの交代機能番号
+#define I2C_SDA_GPIO	GPIOA			//SDAのﾎﾟｰﾄ
+#define I2C_SDA_BIT	10			//SDAのﾋﾞｯﾄ
+#define	I2C_SDA_AF	6			//SDAの交代機能番号
+
+//SPIのﾎﾟｰﾄ定義
+#define	SPI_SOFT				//SPIをｿﾌﾄ実装する
+#define	SHSPI2					//2線SPIで繋ぐ
+#define	SPI_SS_TIME	10			//SSﾈｹﾞｰﾄ待ち時間[us]
+#define SPI_SCK_GPIO	GPIOA			//SCKのﾎﾟｰﾄ
+#define SPI_SCK_BIT	13			//SCKのﾋﾞｯﾄ
+#define SPI_MOSI_GPIO	GPIOA			//MOSIのﾎﾟｰﾄ
+#define SPI_MOSI_BIT	2			//MOSIのﾋﾞｯﾄ
+#define SPI_SS_GPIO	SPI_SCK_GPIO		//SSのﾎﾟｰﾄ
+#define SPI_SS_BIT	SPI_SCK_BIT		//SSのﾋﾞｯﾄ
+#define SPI_MISO_GPIO	SPI_MOSI_GPIO		//MISOのﾎﾟｰﾄ
+#define SPI_MISO_BIT	SPI_MOSI_BIT		//MISOのﾋﾞｯﾄ
+
+//SPIのﾌﾟﾙｱｯﾌﾟ/ﾀﾞｳﾝ定義
+#define	SPI_SCK_PU				//SPI_SCKをﾌﾟﾙｱｯﾌﾟする
+//#define	SPI_SCK_PD			//SPI_SCKをﾌﾟﾙﾀﾞｳﾝする
+#define	SPI_MOSI_PU				//SPI_MOSIをﾌﾟﾙｱｯﾌﾟする
+//#define	SPI_MOSI_PD			//SPI_MOSIをﾌﾟﾙﾀﾞｳﾝする
+#define	SPI_MISO_PU				//SPI_MISOをﾌﾟﾙｱｯﾌﾟする
+//#define	SPI_MISO_PD			//SPI_MISOをﾌﾟﾙﾀﾞｳﾝする
+
+
+//SW0のﾎﾟｰﾄ定義
+#define	SW0_GPIO	GPIOA			//SW0のﾎﾟｰﾄ
+#define	SW0_EXTI_PORT	0			//SW0のEXTIﾎﾟｰﾄ(0=PA､1=PB､2=PF)
+#define	SW0_BIT		2			//SW0のﾋﾞｯﾄ
+#define	SW0_INV					//SW0入力は負論理
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define SW0_TIMER				//SW0はﾀｲﾏｰﾓｰﾄﾞ
+//#define	SW0_REAL			//SW0はﾘｱﾙﾓｰﾄﾞ
+#define	SW0_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//SW0の操作対象 
+
+//CdSのﾎﾟｰﾄ定義
+#define	CdS_GPIO	GPIOA			//CdSのﾎﾟｰﾄ
+#define	CdS_BIT		2			//CdSのﾋﾞｯﾄ
+#define	CdS_CHSEL	0x0004			//CdSのADCCHSEL
+//#define	CdS_INV				//CdS入力は負論理(暗=L)
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define CdS_TIMER				//CdSはﾀｲﾏｰﾓｰﾄﾞ
+//#define	CdS_REAL			//CdSはﾘｱﾙﾓｰﾄﾞ
+#define	CdS_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//CdSの操作対象
+
+//CVD0のﾎﾟｰﾄ定義
+#define	CVD0_GPIO	GPIOA			//CVD0のﾎﾟｰﾄ
+#define	CVD0_BIT	2			//CVD0のﾋﾞｯﾄ
+#define	CVD0_CHSEL	0x0004			//CVD0のADCCHSEL
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define CVD0_TIMER				//CVD0はﾀｲﾏｰﾓｰﾄﾞ
+//#define	CVD0_REAL			//CVD0はﾘｱﾙﾓｰﾄﾞ
+#define	CVD0_CNT	ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//CVD0の操作対象
+#endif
+
+//----------------------------------------------
+#ifdef CONF3				//構成3のとき
+//UARTのﾎﾟｰﾄ定義
+#define	UART_GPIO	GPIOA			//UART出力のﾎﾟｰﾄ
+#define	UART_BIT	14			//UART出力のﾋﾞｯﾄ
+#define	UART_AF		1			//UART出力のUART_TX交代機能番号
+#define	UART_IN_GPIO	GPIOA			//UART入力のﾎﾟｰﾄ
+#define	UART_IN_BIT	10			//UART入力のﾋﾞｯﾄ
+#define	UART_IN_AF	1			//UART入力のUART_RX交代機能番号
+
+//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ定義
+#define	SHDBG_SOFT				//ﾃﾞﾊﾞｸﾞ情報のUARTをｿﾌﾄ実装する
+#define	DBG_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ
+#define	DBG_BIT		1			//ﾃﾞﾊﾞｸﾞ情報のﾋﾞｯﾄ
+
+//PWMのﾎﾟｰﾄ定義
+#define	PWM_F_GPIO	GPIOB			//PWM正相のﾎﾟｰﾄ
+#define	PWM_F_BIT	3			//PWM正相のﾋﾞｯﾄ
+#define	PWM_F_AF	1			//PWM正相の交代機能番号
+#ifndef SHDBG				//ﾃﾞﾊﾞｸﾞ情報を出力しないとき
+#define	PWM_R_GPIO	GPIOA			//PWM逆相のﾎﾟｰﾄ
+#define	PWM_R_BIT	1			//PWM逆相のﾋﾞｯﾄ
+#define	PWM_R_AF	13			//PWM逆相の交代機能番号
+#define	PWM_C_GPIO	GPIOA			//PWM相補のﾎﾟｰﾄ
+#define	PWM_C_BIT	1			//PWM相補のﾋﾞｯﾄ
+#define	PWM_C_AF	14			//PWM相補の交代機能番号
+#endif
+
+//SPIのﾎﾟｰﾄ定義
+#define SPI_SCK_GPIO	GPIOA			//SCKのﾎﾟｰﾄ
+#define SPI_SCK_BIT	2			//SCKのﾋﾞｯﾄ
+#define SPI_SCK_AF	10			//SCKの交代機能番号
+#define SPI_MOSI_GPIO	GPIOA			//MOSIのﾎﾟｰﾄ
+#define SPI_MOSI_BIT	3			//MOSIのﾋﾞｯﾄ
+#define SPI_MOSI_AF	10			//MOSIの交代機能番号
+#define SPI_SS_GPIO	GPIOA			//SSのﾎﾟｰﾄ
+#define SPI_SS_BIT	1			//SSのﾋﾞｯﾄ
+#define SPI_MISO_GPIO	GPIOA			//MISOのﾎﾟｰﾄ
+#define SPI_MISO_BIT	13			//MISOのﾋﾞｯﾄ
+#define SPI_MISO_AF	10			//MISOの交代機能番号
+
+//SPIのﾌﾟﾙｱｯﾌﾟ/ﾀﾞｳﾝ定義
+#define	SPI_SCK_PU				//SPI_SCKをﾌﾟﾙｱｯﾌﾟする
+//#define	SPI_SCK_PD			//SPI_SCKをﾌﾟﾙﾀﾞｳﾝする
+#define	SPI_MOSI_PU				//SPI_MOSIをﾌﾟﾙｱｯﾌﾟする
+//#define	SPI_MOSI_PD			//SPI_MOSIをﾌﾟﾙﾀﾞｳﾝする
+#define	SPI_MISO_PU				//SPI_MISOをﾌﾟﾙｱｯﾌﾟする
+//#define	SPI_MISO_PD			//SPI_MISOをﾌﾟﾙﾀﾞｳﾝする
+
+
+//SW0のﾎﾟｰﾄ定義
+#define	SW0_GPIO	GPIOA			//SW0のﾎﾟｰﾄ
+#define	SW0_EXTI_PORT	0			//SW0のEXTIﾎﾟｰﾄ(0=PA､1=PB､2=PF)
+#define	SW0_BIT		13			//SW0のﾋﾞｯﾄ
+#define	SW0_INV					//SW0入力は負論理
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define SW0_TIMER				//SW0はﾀｲﾏｰﾓｰﾄﾞ
+//#define	SW0_REAL			//SW0はﾘｱﾙﾓｰﾄﾞ
+#define	SW0_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//SW0の操作対象 
+
+//SW1のﾎﾟｰﾄ定義
+#define	SW1_GPIO	GPIOA			//SW1のﾎﾟｰﾄ
+#define	SW1_EXTI_PORT	0			//SW1のEXTIﾎﾟｰﾄ(0=PA､1=PB､2=PF)
+#define	SW1_BIT		2			//SW1のﾋﾞｯﾄ
+#define	SW1_INV					//SW1入力は負論理
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define SW1_TIMER				//SW1はﾀｲﾏｰﾓｰﾄﾞ
+//#define	SW1_REAL			//SW1はﾘｱﾙﾓｰﾄﾞ
+#define	SW1_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//SW1の操作対象 
+
+//CdSのﾎﾟｰﾄ定義
+#define	CdS_GPIO	GPIOA			//CdSのﾎﾟｰﾄ
+#define	CdS_BIT		3			//CdSのﾋﾞｯﾄ
+#define	CdS_CHSEL	0x0008			//CdSのADCCHSEL
+//#define	CdS_INV				//CdS入力は負論理(暗=L)
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define CdS_TIMER				//CdSはﾀｲﾏｰﾓｰﾄﾞ
+//#define	CdS_REAL			//CdSはﾘｱﾙﾓｰﾄﾞ
+#define	CdS_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//CdSの操作対象
+
+//CVD0のﾎﾟｰﾄ定義
+#define	CVD0_GPIO	GPIOA			//CVD0のﾎﾟｰﾄ
+#define	CVD0_BIT	3			//CVD0のﾋﾞｯﾄ
+#define	CVD0_CHSEL	0x0008			//CVD0のADCCHSEL
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define CVD0_TIMER				//CVD0はﾀｲﾏｰﾓｰﾄﾞ
+//#define	CVD0_REAL			//CVD0はﾘｱﾙﾓｰﾄﾞ
+#define	CVD0_CNT	ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//CVD0の操作対象
+#endif
+
+//----------------------------------------------
+#ifdef CONF4				//構成4のとき
+//UARTのﾎﾟｰﾄ定義
+#define	UART_GPIO	GPIOA			//UART出力のﾎﾟｰﾄ
+#define	UART_BIT	14			//UART出力のﾋﾞｯﾄ
+#define	UART_AF		1			//UART出力のUART_TX交代機能番号
+#define	UART_IN_GPIO	GPIOA			//UART入力のﾎﾟｰﾄ
+#define	UART_IN_BIT	10			//UART入力のﾋﾞｯﾄ
+#define	UART_IN_AF	1			//UART入力のUART_RX交代機能番号
+
+//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ定義
+#define	SHDBG_SOFT				//ﾃﾞﾊﾞｸﾞ情報のUARTをｿﾌﾄ実装する
+#define	DBG_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ
+#define	DBG_BIT		1			//ﾃﾞﾊﾞｸﾞ情報のﾋﾞｯﾄ
+
+//PWMのﾎﾟｰﾄ定義
+#define	PWM_F_GPIO	GPIOB			//PWM正相のﾎﾟｰﾄ
+#define	PWM_F_BIT	3			//PWM正相のﾋﾞｯﾄ
+#define	PWM_F_AF	1			//PWM正相の交代機能番号
+#ifndef SHDBG				//ﾃﾞﾊﾞｸﾞ情報を出力しないとき
+#define	PWM_R_GPIO	GPIOA			//PWM逆相のﾎﾟｰﾄ
+#define	PWM_R_BIT	1			//PWM逆相のﾋﾞｯﾄ
+#define	PWM_R_AF	13			//PWM逆相の交代機能番号
+#define	PWM_C_GPIO	GPIOA			//PWM相補のﾎﾟｰﾄ
+#define	PWM_C_BIT	1			//PWM相補のﾋﾞｯﾄ
+#define	PWM_C_AF	14			//PWM相補の交代機能番号
+#endif
+
+//SPIのﾎﾟｰﾄ定義
+#define	SPI_SOFT				//SPIをｿﾌﾄ実装する
+#define	SHSPI3					//3線SPIで繋ぐ
+#define SPI_SCK_GPIO	GPIOA			//SCKのﾎﾟｰﾄ
+#define SPI_SCK_BIT	2			//SCKのﾋﾞｯﾄ
+#define SPI_MOSI_GPIO	GPIOA			//MOSIのﾎﾟｰﾄ
+#define SPI_MOSI_BIT	3			//MOSIのﾋﾞｯﾄ
+#define SPI_SS_GPIO	GPIOA			//SSのﾎﾟｰﾄ
+#define SPI_SS_BIT	13			//SSのﾋﾞｯﾄ
+#define SPI_MISO_GPIO	SPI_MOSI_GPIO		//MISOのﾎﾟｰﾄ
+#define SPI_MISO_BIT	SPI_MOSI_BIT		//MISOのﾋﾞｯﾄ
+
+//SPIのﾌﾟﾙｱｯﾌﾟ/ﾀﾞｳﾝ定義
+#define	SPI_SCK_PU				//SPI_SCKをﾌﾟﾙｱｯﾌﾟする
+//#define	SPI_SCK_PD			//SPI_SCKをﾌﾟﾙﾀﾞｳﾝする
+#define	SPI_MOSI_PU				//SPI_MOSIをﾌﾟﾙｱｯﾌﾟする
+//#define	SPI_MOSI_PD			//SPI_MOSIをﾌﾟﾙﾀﾞｳﾝする
+#define	SPI_MISO_PU				//SPI_MISOをﾌﾟﾙｱｯﾌﾟする
+//#define	SPI_MISO_PD			//SPI_MISOをﾌﾟﾙﾀﾞｳﾝする
+
+
+//SW0のﾎﾟｰﾄ定義
+#define	SW0_GPIO	GPIOA			//SW0のﾎﾟｰﾄ
+#define	SW0_EXTI_PORT	0			//SW0のEXTIﾎﾟｰﾄ(0=PA､1=PB､2=PF)
+#define	SW0_BIT		4			//SW0のﾋﾞｯﾄ
+#define	SW0_INV					//SW0入力は負論理
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define SW0_TIMER				//SW0はﾀｲﾏｰﾓｰﾄﾞ
+//#define	SW0_REAL			//SW0はﾘｱﾙﾓｰﾄﾞ
+#define	SW0_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//SW0の操作対象 
+
+//SW1のﾎﾟｰﾄ定義
+#define	SW1_GPIO	GPIOA			//SW1のﾎﾟｰﾄ
+#define	SW1_EXTI_PORT	0			//SW1のEXTIﾎﾟｰﾄ(0=PA､1=PB､2=PF)
+#define	SW1_BIT		3			//SW1のﾋﾞｯﾄ
+#define	SW1_INV					//SW1入力は負論理
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define SW1_TIMER				//SW1はﾀｲﾏｰﾓｰﾄﾞ
+//#define	SW1_REAL			//SW1はﾘｱﾙﾓｰﾄﾞ
+#define	SW1_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//SW1の操作対象 
+
+//SW2のﾎﾟｰﾄ定義
+#define	SW2_GPIO	GPIOA			//SW2のﾎﾟｰﾄ
+#define	SW2_EXTI_PORT	0			//SW2のEXTIﾎﾟｰﾄ(0=PA､1=PB､2=PF)
+#define	SW2_BIT		2			//SW2のﾋﾞｯﾄ
+#define	SW2_INV					//SW2入力は負論理
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define SW2_TIMER				//SW2はﾀｲﾏｰﾓｰﾄﾞ
+//#define	SW2_REAL			//SW2はﾘｱﾙﾓｰﾄﾞ
+#define	SW2_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//SW2の操作対象 
 
 //CdSのﾎﾟｰﾄ定義
 #define	CdS_GPIO	GPIOA			//CdSのﾎﾟｰﾄ
@@ -207,15 +594,161 @@ PY32F002A(8ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 #define	CVD0_CNT	ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
 						//CVD0の操作対象
 
+//CVD1のﾎﾟｰﾄ定義
+#define	CVD1_GPIO	GPIOA			//CVD1のﾎﾟｰﾄ
+#define	CVD1_BIT	3			//CVD1のﾋﾞｯﾄ
+#define	CVD1_CHSEL	0x0008			//CVD1のADCCHSEL
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define CVD1_TIMER				//CVD1はﾀｲﾏｰﾓｰﾄﾞ
+//#define	CVD0_REAL			//CVD1はﾘｱﾙﾓｰﾄﾞ
+#define	CVD1_CNT	ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//CVD1の操作対象
+
+//CVD2のﾎﾟｰﾄ定義
+#define	CVD2_GPIO	GPIOA			//CVD2のﾎﾟｰﾄ
+#define	CVD2_BIT	4			//CVD2のﾋﾞｯﾄ
+#define	CVD2_CHSEL	0x0010			//CVD2のADCCHSEL
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define CVD2_TIMER				//CVD2はﾀｲﾏｰﾓｰﾄﾞ
+//#define	CVD0_REAL			//CVD2はﾘｱﾙﾓｰﾄﾞ
+#define	CVD2_CNT	ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//CVD2の操作対象
+
 //LEDのﾎﾟｰﾄ定義
-//#define	LED0_GPIO	GPIOB		//LED0のﾎﾟｰﾄ
-//#define	LED0_BIT	1		//LED0のﾋﾞｯﾄ
-//#define	LED1_GPIO	GPIOD		//LED1のﾎﾟｰﾄ
+#define	LED0_GPIO	GPIOA		//LED0のﾎﾟｰﾄ
+//#define	LED0_BIT	4		//LED0のﾋﾞｯﾄ
+#endif
+
+//----------------------------------------------
+#ifdef CONF5				//構成5のとき
+//UARTのﾎﾟｰﾄ定義
+#define	UART_GPIO	GPIOA			//UART出力のﾎﾟｰﾄ
+#define	UART_BIT	14			//UART出力のﾋﾞｯﾄ
+#define	UART_AF		1			//UART出力のUART_TX交代機能番号
+#define	UART_IN_GPIO	GPIOA			//UART入力のﾎﾟｰﾄ
+#define	UART_IN_BIT	10			//UART入力のﾋﾞｯﾄ
+#define	UART_IN_AF	1			//UART入力のUART_RX交代機能番号
+
+//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ定義
+#define	SHDBG_SOFT				//ﾃﾞﾊﾞｸﾞ情報のUARTをｿﾌﾄ実装する
+#define	DBG_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ
+#define	DBG_BIT		1			//ﾃﾞﾊﾞｸﾞ情報のﾋﾞｯﾄ
+
+//PWMのﾎﾟｰﾄ定義
+#define	PWM_F_GPIO	GPIOB			//PWM正相のﾎﾟｰﾄ
+#define	PWM_F_BIT	3			//PWM正相のﾋﾞｯﾄ
+#define	PWM_F_AF	1			//PWM正相の交代機能番号
+#ifndef SHDBG				//ﾃﾞﾊﾞｸﾞ情報を出力しないとき
+#define	PWM_R_GPIO	GPIOA			//PWM逆相のﾎﾟｰﾄ
+#define	PWM_R_BIT	1			//PWM逆相のﾋﾞｯﾄ
+#define	PWM_R_AF	13			//PWM逆相の交代機能番号
+#define	PWM_C_GPIO	GPIOA			//PWM相補のﾎﾟｰﾄ
+#define	PWM_C_BIT	1			//PWM相補のﾋﾞｯﾄ
+#define	PWM_C_AF	14			//PWM相補の交代機能番号
+#endif
+
+//SPIのﾎﾟｰﾄ定義
+#define	SPI_SOFT				//SPIをｿﾌﾄ実装する
+#define	SHSPI2					//2線SPIで繋ぐ
+#define	SPI_SS_TIME	10			//SSﾈｹﾞｰﾄ待ち時間[us]
+#define SPI_SCK_GPIO	GPIOA			//SCKのﾎﾟｰﾄ
+#define SPI_SCK_BIT	13			//SCKのﾋﾞｯﾄ
+#define SPI_MOSI_GPIO	GPIOA			//MOSIのﾎﾟｰﾄ
+#define SPI_MOSI_BIT	3			//MOSIのﾋﾞｯﾄ
+#define SPI_SS_GPIO	SPI_SCK_GPIO		//SSのﾎﾟｰﾄ
+#define SPI_SS_BIT	SPI_SCK_BIT		//SSのﾋﾞｯﾄ
+#define SPI_MISO_GPIO	SPI_MOSI_GPIO		//MISOのﾎﾟｰﾄ
+#define SPI_MISO_BIT	SPI_MOSI_BIT		//MISOのﾋﾞｯﾄ
+
+//SPIのﾌﾟﾙｱｯﾌﾟ/ﾀﾞｳﾝ定義
+#define	SPI_SCK_PU				//SPI_SCKをﾌﾟﾙｱｯﾌﾟする
+//#define	SPI_SCK_PD			//SPI_SCKをﾌﾟﾙﾀﾞｳﾝする
+#define	SPI_MOSI_PU				//SPI_MOSIをﾌﾟﾙｱｯﾌﾟする
+//#define	SPI_MOSI_PD			//SPI_MOSIをﾌﾟﾙﾀﾞｳﾝする
+#define	SPI_MISO_PU				//SPI_MISOをﾌﾟﾙｱｯﾌﾟする
+//#define	SPI_MISO_PD			//SPI_MISOをﾌﾟﾙﾀﾞｳﾝする
+
+
+//SW0のﾎﾟｰﾄ定義
+#define	SW0_GPIO	GPIOA			//SW0のﾎﾟｰﾄ
+#define	SW0_EXTI_PORT	0			//SW0のEXTIﾎﾟｰﾄ(0=PA､1=PB､2=PF)
+#define	SW0_BIT		4			//SW0のﾋﾞｯﾄ
+#define	SW0_INV					//SW0入力は負論理
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define SW0_TIMER				//SW0はﾀｲﾏｰﾓｰﾄﾞ
+//#define	SW0_REAL			//SW0はﾘｱﾙﾓｰﾄﾞ
+#define	SW0_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//SW0の操作対象 
+
+//SW1のﾎﾟｰﾄ定義
+#define	SW1_GPIO	GPIOA			//SW1のﾎﾟｰﾄ
+#define	SW1_EXTI_PORT	0			//SW1のEXTIﾎﾟｰﾄ(0=PA､1=PB､2=PF)
+#define	SW1_BIT		3			//SW1のﾋﾞｯﾄ
+#define	SW1_INV					//SW1入力は負論理
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define SW1_TIMER				//SW1はﾀｲﾏｰﾓｰﾄﾞ
+//#define	SW1_REAL			//SW1はﾘｱﾙﾓｰﾄﾞ
+#define	SW1_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//SW1の操作対象 
+
+//SW2のﾎﾟｰﾄ定義
+#define	SW2_GPIO	GPIOA			//SW2のﾎﾟｰﾄ
+#define	SW2_EXTI_PORT	0			//SW2のEXTIﾎﾟｰﾄ(0=PA､1=PB､2=PF)
+#define	SW2_BIT		2			//SW2のﾋﾞｯﾄ
+#define	SW2_INV					//SW2入力は負論理
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define SW2_TIMER				//SW2はﾀｲﾏｰﾓｰﾄﾞ
+//#define	SW2_REAL			//SW2はﾘｱﾙﾓｰﾄﾞ
+#define	SW2_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//SW2の操作対象 
+
+//CdSのﾎﾟｰﾄ定義
+#define	CdS_GPIO	GPIOA			//CdSのﾎﾟｰﾄ
+#define	CdS_BIT		2			//CdSのﾋﾞｯﾄ
+#define	CdS_CHSEL	0x0004			//CdSのADCCHSEL
+//#define	CdS_INV				//CdS入力は負論理(暗=L)
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define CdS_TIMER				//CdSはﾀｲﾏｰﾓｰﾄﾞ
+//#define	CdS_REAL			//CdSはﾘｱﾙﾓｰﾄﾞ
+#define	CdS_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//CdSの操作対象
+
+//CVD0のﾎﾟｰﾄ定義
+#define	CVD0_GPIO	GPIOA			//CVD0のﾎﾟｰﾄ
+#define	CVD0_BIT	2			//CVD0のﾋﾞｯﾄ
+#define	CVD0_CHSEL	0x0004			//CVD0のADCCHSEL
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define CVD0_TIMER				//CVD0はﾀｲﾏｰﾓｰﾄﾞ
+//#define	CVD0_REAL			//CVD0はﾘｱﾙﾓｰﾄﾞ
+#define	CVD0_CNT	ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//CVD0の操作対象
+
+//CVD1のﾎﾟｰﾄ定義
+#define	CVD1_GPIO	GPIOA			//CVD1のﾎﾟｰﾄ
+#define	CVD1_BIT	3			//CVD1のﾋﾞｯﾄ
+#define	CVD1_CHSEL	0x0008			//CVD1のADCCHSEL
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define CVD1_TIMER				//CVD1はﾀｲﾏｰﾓｰﾄﾞ
+//#define	CVD1_REAL			//CVD1はﾘｱﾙﾓｰﾄﾞ
+#define	CVD1_CNT	ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//CVD1の操作対象
+
+//CVD2のﾎﾟｰﾄ定義
+#define	CVD2_GPIO	GPIOA			//CVD2のﾎﾟｰﾄ
+#define	CVD2_BIT	4			//CVD2のﾋﾞｯﾄ
+#define	CVD2_CHSEL	0x0010			//CVD2のADCCHSEL
+					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
+#define CVD2_TIMER				//CVD2はﾀｲﾏｰﾓｰﾄﾞ
+//#define	CVD0_REAL			//CVD2はﾘｱﾙﾓｰﾄﾞ
+#define	CVD2_CNT	ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
+						//CVD2の操作対象
+
+//LEDのﾎﾟｰﾄ定義
+#define	LED0_GPIO	GPIOA		//LED0のﾎﾟｰﾄ
+//#define	LED0_BIT	4		//LED0のﾋﾞｯﾄ
+#define	LED1_GPIO	GPIOA		//LED1のﾎﾟｰﾄ
 //#define	LED1_BIT	2		//LED1のﾋﾞｯﾄ
-//#define	LED2_GPIO	GPIOD		//LED2のﾎﾟｰﾄ
-//#define	LED2_BIT	3		//LED2のﾋﾞｯﾄ
-//#define	LED3_GPIO	GPIOC		//LED3のﾎﾟｰﾄ
-//#define	LED3_BIT	2		//LED3のﾋﾞｯﾄ
+#endif
 
 
 #if	PART_N>0
@@ -263,9 +796,9 @@ static const struct VOICEI_HDR voiceI_idx[]=
 
 #ifdef VOICEI_IMA			//IMA-ADPCMのとき
 	//voice_DAMEのW25Q_IMAを使う
-//	voi_mac(0x000000,0x0007df,8000,0xa0)	//1:WAN_1ch16bit16ksps.wav
-//	voi_mac(0x0007df,0x000797,8000,0xa0)	//2:DAME_1ch16bit16ksps.wav
-//	voi_mac(0x000f76,0x001d0b,8000,0xa0)	//3:CHIKO_1ch16bit16ksps.wav
+	voi_mac(0x000000,0x0007df,8000,0xa0)	//1:WAN_1ch16bit16ksps.wav
+	voi_mac(0x0007df,0x000797,8000,0xa0)	//2:DAME_1ch16bit16ksps.wav
+	voi_mac(0x000f76,0x001d0b,8000,0xa0)	//3:CHIKO_1ch16bit16ksps.wav
 
 #else					//8ﾋﾞｯﾄPCMのとき
 	//voice_DAMEのW25Qを使う
@@ -345,5 +878,13 @@ static const struct VOICES_HDR voiceS_idx[]=
 //==============================================
 //共通ｺｰﾄﾞの呼込み
 //==============================================
+#ifdef ISP_SPIFLASH_EN			//ISP環境でSPIﾌﾗｯｼｭを書替えるとき
+#define	UARTBPS	230400				//UARTは230400bps
+#define	UART_TX					//UART送信を使う
+#define	UART_RX					//UART受信を使う
+#include "../dev_F002A_8.c"			//F002A_8ﾋﾟﾝﾃﾞﾊﾞｲｽｺｰﾄﾞ
+#include "../apl_ISP_SPIFLASH.c"		//ISP実行ｱﾌﾟﾘｹｰｼｮﾝ
+#else					//電子ｵﾙｺﾞｰﾙ動作のとき
 #include "../dev_F002A_8.c"			//F002A_8ﾋﾟﾝﾃﾞﾊﾞｲｽｺｰﾄﾞ
 #include "../apl_SW.c"				//SW操作ｱﾌﾟﾘｹｰｼｮﾝ
+#endif
