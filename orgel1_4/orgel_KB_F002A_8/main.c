@@ -1,8 +1,6 @@
 //#define	SHDBS		//ﾃﾞﾊﾞｸﾞ信号を出力するときに宣言する
 #define	SHDBG		//ﾃﾞﾊﾞｸﾞ情報を出力するときに宣言する
 //#define	SHBPS	115200	//ﾃﾞﾊﾞｸﾞ情報のﾎﾞｰﾚｰﾄを宣言する(ﾃﾞﾌｫﾙﾄ値は38400bps)
-//#define	SHDBG_SOFT	//ﾃﾞﾊﾞｸﾞ情報のUARTをｿﾌﾄ実装するときに宣言する		
-#define	SHDBG_IN	//ﾃﾞﾊﾞｸﾞ情報を入力するときに宣言する(UARTのｿﾌﾄ実装は不可)		
 
 //#define	I2C_SOFT	//I2Cをｿﾌﾄ実装するときに宣言する
 //#define	SPI_SOFT	//SPIをｿﾌﾄ実装するときに宣言する
@@ -33,12 +31,26 @@
 #define		VOICEI_IMA	//音声IがIMA_ADPCMｴﾝｺｰﾄﾞのときに宣言する
 #define		VOICES_IMA	//音声SがIMA_ADPCMｴﾝｺｰﾄﾞのときに宣言する
 
+//#define	ISP_SPIFLASH_EN	//ISP環境でSPIﾌﾗｯｼｭを書替えるときに宣言する
+				//(自動的に､ﾃﾞﾊﾞｸﾞ情報のUART内蔵ﾓｼﾞｭｰﾙを230400bpsで使用する)
+				//(通常のｱﾌﾟﾘは実行されない)
+
 
 /*
 PUYA32電子ｵﾙｺﾞｰﾙ演奏+音声再生ver1_4
 これは根のｿｰｽｺｰﾄﾞ
 
+・ISP形態でSPIﾌﾗｯｼｭを書替える機能(ISP_SPIFLASH)に対応している｡
+
 ・ﾀｰｹﾞｯﾄはPY32F002A_8ﾋﾟﾝ(内部48MHzｸﾛｯｸ)
+
+・UARTから受信したKB演奏ﾃﾞｰﾀに従って､orgelｴﾝｼﾞﾝへ音符ｺｰﾄﾞを送って演奏させる｡
+
+・白鍵と黒鍵をPCのｷｰﾎﾞｰﾄﾞ上に配置して演奏する｡
+
+・UARTから受信したｵﾙｺﾞｰﾙ演奏､或いはSPI音声再生の指示ﾃﾞｰﾀに従って､それらを起動する｡
+
+・その他の音声再生機能は､このｻﾝﾌﾟﾙｱﾌﾟﾘでは実装していない
 
 
 //==============================================
@@ -84,21 +96,22 @@ W25Qのﾋﾟﾝ接(標準SPIﾓｰﾄﾞ)
 
 //==============================================
 //PY32のﾋﾟﾝ接
-//SPIとI2Cは同時使用できない
-//SPIは3線SPIまたは2線SPIで接続する
-//ｼﾝｸﾞﾙ出力以外ではﾃﾞﾊﾞｸﾞ信号とﾃﾞﾊﾞｸﾞ情報を出力できない
+//I2Cは使わない
+//SPIは2線SPIで接続する
+//UART入力はKB操作情報受信で使用する
+//ISPではUART入力と出力を使用する
 //==============================================
 PY32F002A(8ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 1:Vcc
 2:(PA4)
-2:(PA10)SS(M25QのCS･SDCのCSに繋ぐ､2線SPIでは不使用)/(I2C_SDA)SDA(24FCのSDAに繋ぐ)/(USART1_RX)ﾃﾞﾊﾞｸﾞ情報入力
-3:(PA3)SCK(M25QのCLK･SDCのCLKに繋ぐ)/(I2C_SCL)SCL(24FCのSCLに繋ぐ)
-4:(PA14-SWC)
-4:(PB3)/(TIM1_CH2)正相出力
-5:(PA13-SWD)SW0､MOSI(M25QのDI･SDCのDIに繋ぐ)
-6:(PA2)SW1､ﾃﾞﾊﾞｸﾞ信号､ﾃﾞﾊﾞｸﾞ情報出力/(USART1_TX)ﾃﾞﾊﾞｸﾞ情報出力/(ADC_IN2)CdS､CVD0
+2:(PA10)/(USART1_RX)UART入力
+3:(PA3)SW0､MOSI(M25QのDI･SDCのDIに繋ぐ)/(ADC_IN3)CdS､CVD0
+4:(PA14-SWC)/(USART1_TX)UART出力
+4:(PB3)(TIM1_CH2)正相出力
+5:(PA13-SWD)SCK(M25QのCLK･SDCのCLKに繋ぐ)
+6:(PA2)ﾃﾞﾊﾞｸﾞ情報出力
 6:(PF2-NRST)=====>PF2はNRST機能を無効にしてGPIO機能に設定しておくこと
-7:(PA1)BOOT0代替､ﾃﾞﾊﾞｸﾞ信号/(TIM1_CH2N)ｺﾝﾌﾟﾘ出力/(CH1_CH4)ﾌﾞﾘｯｼﾞ･ﾌﾞﾚｰｷ逆相出力
+7:(PA1)BOOT0代替/(TIM1_CH4)ﾌﾞﾘｯｼﾞ･ﾌﾞﾚｰｷ逆相出力
 8:Vss
 */
 
@@ -114,17 +127,18 @@ PY32F002A(8ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 //==============================================
 //構成情報(ｱﾌﾟﾘｹｰｼｮﾝとﾀｰｹﾞｯﾄﾃﾞﾊﾞｲｽに関わるもの)
 //==============================================
-//ﾃﾞﾊﾞｸﾞ信号のﾎﾟｰﾄ定義
-#define	DBS_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ信号のﾎﾟｰﾄ
-#define	DBS_BIT		1			//ﾃﾞﾊﾞｸﾞ信号のﾋﾞｯﾄ
+//UARTのﾎﾟｰﾄ定義
+#define	UART_GPIO	GPIOA			//UART出力のﾎﾟｰﾄ
+#define	UART_BIT	14			//UART出力のﾋﾞｯﾄ
+#define	UART_AF		1			//UART出力のUART_TX交代機能番号
+#define	UART_IN_GPIO	GPIOA			//UART入力のﾎﾟｰﾄ
+#define	UART_IN_BIT	10			//UART入力のﾋﾞｯﾄ
+#define	UART_IN_AF	1			//UART入力のUART_RX交代機能番号
 
 //ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ定義
-#define	DBG_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報出力のﾎﾟｰﾄ
-#define	DBG_BIT		2			//ﾃﾞﾊﾞｸﾞ情報出力のﾋﾞｯﾄ
-#define	DBG_AF		1			//ﾃﾞﾊﾞｸﾞ情報出力のUART交代機能番号
-#define	DBG_IN_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報入力のﾎﾟｰﾄ
-#define	DBG_IN_BIT	10			//ﾃﾞﾊﾞｸﾞ情報入力のﾋﾞｯﾄ
-#define	DBG_IN_AF	1			//ﾃﾞﾊﾞｸﾞ情報入力のUART交代機能番号
+#define	SHDBG_SOFT				//ﾃﾞﾊﾞｸﾞ情報のUARTをｿﾌﾄ実装する
+#define	DBG_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ
+#define	DBG_BIT		2			//ﾃﾞﾊﾞｸﾞ情報のﾋﾞｯﾄ
 
 //PWMのﾎﾟｰﾄ定義
 #define	PWM_F_GPIO	GPIOB			//PWM正相のﾎﾟｰﾄ
@@ -137,23 +151,16 @@ PY32F002A(8ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 #define	PWM_C_BIT	1			//PWM相補のﾋﾞｯﾄ
 #define	PWM_C_AF	14			//PWM相補の交代機能番号
 
-//I2Cのﾎﾟｰﾄ定義
-#define I2C_SCL_GPIO	GPIOA			//SCLのﾎﾟｰﾄ
-#define I2C_SCL_BIT	3			//SCLのﾋﾞｯﾄ
-#define	I2C_SCL_AF	12			//SCLの交代機能番号
-#define I2C_SDA_GPIO	GPIOA			//SDAのﾎﾟｰﾄ
-#define I2C_SDA_BIT	10			//SDAのﾋﾞｯﾄ
-#define	I2C_SDA_AF	6			//SDAの交代機能番号
-
 //SPIのﾎﾟｰﾄ定義
 #define	SPI_SOFT				//SPIをｿﾌﾄ実装する
-#define	SHSPI3					//3線SPIで繋ぐ
+#define	SHSPI2					//2線SPIで繋ぐ
+#define	SPI_SS_TIME	10			//SSﾈｹﾞｰﾄ待ち時間[us]
 #define SPI_SCK_GPIO	GPIOA			//SCKのﾎﾟｰﾄ
-#define SPI_SCK_BIT	3			//SCKのﾋﾞｯﾄ
+#define SPI_SCK_BIT	13			//SCKのﾋﾞｯﾄ
 #define SPI_MOSI_GPIO	GPIOA			//MOSIのﾎﾟｰﾄ
-#define SPI_MOSI_BIT	13			//MOSIのﾋﾞｯﾄ
-#define SPI_SS_GPIO	GPIOA			//SSのﾎﾟｰﾄ
-#define SPI_SS_BIT	10			//SSのﾋﾞｯﾄ
+#define SPI_MOSI_BIT	3			//MOSIのﾋﾞｯﾄ
+#define SPI_SS_GPIO	SPI_SCK_GPIO		//SSのﾎﾟｰﾄ
+#define SPI_SS_BIT	SPI_SCK_BIT		//SSのﾋﾞｯﾄ
 #define SPI_MISO_GPIO	SPI_MOSI_GPIO		//MISOのﾎﾟｰﾄ
 #define SPI_MISO_BIT	SPI_MOSI_BIT		//MISOのﾋﾞｯﾄ
 
@@ -164,48 +171,6 @@ PY32F002A(8ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 //#define	SPI_MOSI_PD			//SPI_MOSIをﾌﾟﾙﾀﾞｳﾝする
 #define	SPI_MISO_PU				//SPI_MISOをﾌﾟﾙｱｯﾌﾟする
 //#define	SPI_MISO_PD			//SPI_MISOをﾌﾟﾙﾀﾞｳﾝする
-
-//SW0のﾎﾟｰﾄ定義
-#define	SW0_GPIO	GPIOA			//SW0のﾎﾟｰﾄ
-#define	SW0_EXTI_PORT	0			//SW0のEXTIﾎﾟｰﾄ(0=PA､1=PB､2=PF)
-#define	SW0_BIT		2			//SW0のﾋﾞｯﾄ
-#define	SW0_INV					//SW0入力は負論理
-					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
-#define SW0_TIMER				//SW0はﾀｲﾏｰﾓｰﾄﾞ
-//#define	SW0_REAL			//SW0はﾘｱﾙﾓｰﾄﾞ
-#define	SW0_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
-					//SW0の操作対象 
-
-//CdSのﾎﾟｰﾄ定義
-#define	CdS_GPIO	GPIOA			//CdSのﾎﾟｰﾄ
-#define	CdS_BIT		2			//CdSのﾋﾞｯﾄ
-#define	CdS_CHSEL	0x0004			//CdSのADCCHSEL
-//#define	CdS_INV				//CdS入力は負論理(暗=L)
-					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
-#define CdS_TIMER				//CdSはﾀｲﾏｰﾓｰﾄﾞ
-//#define	CdS_REAL			//CdSはﾘｱﾙﾓｰﾄﾞ
-#define	CdS_CNT		ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
-						//CdSの操作対象
-
-//CVD0のﾎﾟｰﾄ定義
-#define	CVD0_GPIO	GPIOA			//CVD0のﾎﾟｰﾄ
-#define	CVD0_BIT	2			//CVD0のﾋﾞｯﾄ
-#define	CVD0_CHSEL	0x0004			//CVD0のADCCHSEL
-					//以下のﾀｲﾏｰﾓｰﾄﾞとﾘｱﾙﾓｰﾄﾞは択一
-#define CVD0_TIMER				//CVD0はﾀｲﾏｰﾓｰﾄﾞ
-//#define	CVD0_REAL			//CVD0はﾘｱﾙﾓｰﾄﾞ
-#define	CVD0_CNT	ORGEL_CNT|VOICEN_CNT|VOICEI_CNT|VOICEC_CNT|VOICES_CNT
-						//CVD0の操作対象
-
-//LEDのﾎﾟｰﾄ定義
-//#define	LED0_GPIO	GPIOB		//LED0のﾎﾟｰﾄ
-//#define	LED0_BIT	1		//LED0のﾋﾞｯﾄ
-//#define	LED1_GPIO	GPIOD		//LED1のﾎﾟｰﾄ
-//#define	LED1_BIT	2		//LED1のﾋﾞｯﾄ
-//#define	LED2_GPIO	GPIOD		//LED2のﾎﾟｰﾄ
-//#define	LED2_BIT	3		//LED2のﾋﾞｯﾄ
-//#define	LED3_GPIO	GPIOC		//LED3のﾎﾟｰﾄ
-//#define	LED3_BIT	2		//LED3のﾋﾞｯﾄ
 
 
 #if	KB_N>0
@@ -351,5 +316,15 @@ static const struct VOICES_HDR voiceS_idx[]=
 //==============================================
 //共通ｺｰﾄﾞの呼込み
 //==============================================
+#ifdef ISP_SPIFLASH_EN			//ISP環境でSPIﾌﾗｯｼｭを書替えるとき
+#define	UARTBPS	230400				//UARTは230400bps
+#define	UART_TX					//UART送信を使う
+#define	UART_RX					//UART受信を使う
+#include "../dev_F002A_8.c"			//F002A_8ﾋﾟﾝﾃﾞﾊﾞｲｽｺｰﾄﾞ
+#include "../apl_ISP_SPIFLASH.c"		//ISP実行ｱﾌﾟﾘｹｰｼｮﾝ
+#else					//KB演奏のとき
+#define	UARTBPS	38400				//UARTは38400bps
+#define	UART_RX					//UART受信を使う
 #include "../dev_F002A_8.c"			//F002A_8ﾋﾟﾝﾃﾞﾊﾞｲｽｺｰﾄﾞ
 #include "../apl_KB.c"				//KB操作ｱﾌﾟﾘｹｰｼｮﾝ
+#endif
