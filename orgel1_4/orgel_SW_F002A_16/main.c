@@ -159,10 +159,10 @@ PY32F002A(16ﾋﾟﾝ)のﾎﾟｰﾄの割当て
 #define	DBG_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報出力のﾎﾟｰﾄ
 #define	DBG_BIT		14			//ﾃﾞﾊﾞｸﾞ情報出力のﾋﾞｯﾄ
 #else					//電子ｵﾙｺﾞｰﾙ動作のとき
-#define	DBG_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ
+#define	DBG_GPIO	GPIOF			//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ
 #define	DBG_BIT		1			//ﾃﾞﾊﾞｸﾞ情報のﾋﾞｯﾄ
 #define	DBG_AF		8			//UARTの交代機能番号
-#define	DBG_IN_GPIO	GPIOA			//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ
+#define	DBG_IN_GPIO	GPIOF			//ﾃﾞﾊﾞｸﾞ情報のﾎﾟｰﾄ
 #define	DBG_IN_BIT	0			//ﾃﾞﾊﾞｸﾞ情報のﾋﾞｯﾄ
 #define	DBG_IN_AF	8			//UARTの交代機能番号
 #endif
@@ -410,9 +410,7 @@ static const struct VOICES_HDR voiceS_idx[]=
 #define	UART_RX					//UART受信を使う
 #include "../dev_F002A_16.c"			//F002A_16ﾋﾟﾝﾃﾞﾊﾞｲｽｺｰﾄﾞ
 #include "../apl_ISP_SPIFLASH.c"		//ISP実行ｱﾌﾟﾘｹｰｼｮﾝ
-#else					//KB演奏のとき
-#define	UARTBPS	38400				//UARTは38400bps
-#define	UART_RX					//UART受信を使う
+#else					//電子ｵﾙｺﾞｰﾙ動作のとき
 #include "../dev_F002A_16.c"			//F002A_16ﾋﾟﾝﾃﾞﾊﾞｲｽｺｰﾄﾞ
 #include "../apl_SW.c"				//SW操作ｱﾌﾟﾘｹｰｼｮﾝ
 #endif
