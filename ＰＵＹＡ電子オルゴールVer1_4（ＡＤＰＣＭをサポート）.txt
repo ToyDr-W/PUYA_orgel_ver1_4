@@ -23,12 +23,12 @@
 
 ・プログラムフラッシュは３２ｋバイトあるので、３０ｋバイトに音声データを収容することができる。
 
-・８ｋｓｐｓでは　３０kバイト／４ビット／８ｋｓｐｓ＝７．５秒　となる。
+・８ｋｓｐｓでは　３０ｋバイト／４ビット／８ｋｓｐｓ＝７．５秒　となる。
 
 
 【実装】
 
-①コードのアオウトラインは　<a href="https://tutujith.blog.fc2.com/blog-entry-1074.html" target="_blank" title="ＩＭＡ－ＡＤＰＣＭの導入"><span style="color:#FF0000"><strong>ＩＭＡ－ＡＤＰＣＭの導入</strong></span></a>　を参照。
+①コードのアウトラインは　<a href="https://tutujith.blog.fc2.com/blog-entry-1074.html" target="_blank" title="ＩＭＡ－ＡＤＰＣＭの導入"><span style="color:#FF0000"><strong>ＩＭＡ－ＡＤＰＣＭの導入</strong></span></a>　を参照。
 
 ②実装コードはダウンロードファイルの　ｏｒｇｅｌ．ｃ　を参照。
 

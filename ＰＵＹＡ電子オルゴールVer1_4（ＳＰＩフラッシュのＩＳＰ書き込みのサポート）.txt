@@ -1,0 +1,69 @@
+【前振り】
+
+先日は、<a href="https://tutujith.blog.fc2.com/blog-entry-1087.html" target="_blank" title="ＳＴＭ３２電子オルゴールでＳＰＩフラッシュのＩＳＰ書き込みの機能をサポート"><span style="color:#FF0000"><strong>ＳＴＭ３２電子オルゴールでＳＰＩフラッシュのＩＳＰ書き込みの機能をサポート</strong></span></a>　した。これをＰＵＹＡ電子オルゴールに横展開した。
+
+
+【設計】
+
+①設計の要件は　<a href="https://tutujith.blog.fc2.com/blog-entry-1087.html" target="_blank" title="ＳＴＭ３２電子オルゴールの記事"><span style="color:#FF0000"><strong>ＳＴＭ３２電子オルゴールの記事</strong></span></a>　を参照。
+
+・ＩＳＰを行うためのＵＡＲＴは　２３０４００ｂｐｓ・８データビット・１ストップビット・パリティ無し・フロー制御無し。
+
+・ＰＣ側のツールは　ERASE.bat、WRITE.bat、hexsend.exe　を使う。これらは　tool_ISP_SPIFLASH　に格納されている。
+
+②ＰＵＹＡ電子オルゴールでは、８ピンデバイスでのピン割り当てを整理した。
+
+・通常の電子オルゴール動作ではＩ２ＣとＳＰＩを排他的に使用できること。ＩＳＰ動作時にはＳＰＩとＵＡＲＴが同時に使用できること。その上で、ピン割り当てが共通であることが必要である。
+
+・８ピンデバイスでは周辺の構成毎に最適なピン割り当てを決めた。
+
+・ｍａｉｎ．ｃの冒頭で、下記のようにピン構成のパターンを選択させることにした。
+
+//==============================================
+//ﾋﾟﾝ構成ﾊﾟﾀｰﾝを下記から1行のみを有効とすること
+//==============================================
+//#define	CONF1
+//#define	CONF2
+//#define	CONF3
+//#define	CONF4
+#define	CONF5
+
+
+【実装】
+
+①<a href="https://tutujith.blog.fc2.com/blog-entry-1087.html" target="_blank" title="ＳＴＭ３２電子オルゴールの記事"><span style="color:#FF0000"><strong>ＳＴＭ３２電子オルゴールの記事</strong></span></a>　を参照。
+
+②ｍａｉｎ．ｃの冒頭の動作機能宣言で通常の電子オルゴール機能の実行か、ＩＳＰ機能の実行かを切り替える。変更後に再リビルドし、ダウンロードする。
+
+
+【ダウンロード】
+
+プロジェクト一式は　<a href="https://drive.google.com/file/d/1BHKj8xfGfpvUNbqxVwxWBnooY0XvVsuR/view?usp=sharing" target="_blank" title="ここから"><span style="color:#FF0000"><strong>ここから</strong></span></a>　ダウンロードできる。
+
+パッケージによってピン割り当てが違うので、アプリ機能とピン数別にプロジェクトを作っている。
+
+電子オルゴール機能
+２０ピン
+ディレクトリ　orgel1_4\orgel_SW_F002A_20
+プロジェクト　PY32F002.uvprojx
+
+１６ピン
+ディレクトリ　orgel1_4\orgel_SW_F002A_16
+プロジェクト　PY32F002.uvprojx
+
+８ピン
+ディレクトリ　orgel1_4\orgel_SW_F002A_8
+プロジェクト　PY32F002.uvprojx
+
+キーボード演奏機能
+２０ピン
+ディレクトリ　orgel1_4\orgel_KB_F002A_20
+プロジェクト　PY32F002.uvprojx
+
+１６ピン
+ディレクトリ　orgel1_4\orgel_KB_F002A_16
+プロジェクト　PY32F002.uvprojx
+
+８ピン
+ディレクトリ　orgel1_4\orgel_KB_F002A_8
+プロジェクト　PY32F002.uvprojx
