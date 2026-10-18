@@ -20,7 +20,7 @@
 最新情報や詳細な解説については、以下の公式ページをご確認ください。
 
 * **開発者公式ブログ:** [名張市つつじが丘おもちゃ病院](https://tutujith.blog.fc2.com/)
-* **解説記事:** [ＰＵＹＡ電子オルゴールVer1_4（ｏｒｇｅｌエンジンからデバイス固有処理を排除）](https://tutujith.blog.fc2.com/blog-entry-1078.html)
+* **解説記事:** [ＰＵＹＡ電子オルゴールVer1_4（ＳＰＩフラッシュのＩＳＰ書き込みのサポート）](https://tutujith.blog.fc2.com/blog-entry-1091.html)
 * **オリジナル配布元:** [Google ドライブ - プロジェクト一式（ZIP）](https://drive.google.com/file/d/1BHKj8xfGfpvUNbqxVwxWBnooY0XvVsuR/view?usp=sharing)
 
 ---
@@ -31,6 +31,7 @@
 <summary>クリックして詳細を展開 / Click to view details</summary>
 
 ### 📄 本リポジトリの更新情報
+- **2026/10/18**: v1.1.0 （改版、安定版） 2026/9/16 ＳＰＩフラッシュのＩＳＰ書き込みのサポート
 - **2026/10/14**: v1.0.0 （GitHub開始時、安定版） 2026/9/2 ｏｒｇｅｌエンジンからデバイス固有処理を排除
 
 </details>
